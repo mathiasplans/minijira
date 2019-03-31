@@ -12,12 +12,14 @@ import java.util.List;
 public class TaskContainer {
     final private List<Task> tasks;
     static final Gson gson = new Gson();
+    private String inpath;
 
     public TaskContainer() {
         this.tasks = new ArrayList<>();
     }
 
     public TaskContainer(String path) throws IOException {
+        inpath = path;
         tasks = new ArrayList<>();
 
         File directory = new File(path);
@@ -26,6 +28,15 @@ public class TaskContainer {
 
         for(File file: files){
             tasks.add(new Task(gson.fromJson(Files.readString(file.toPath()), RawTask.class), null /* for now */));
+        }
+    }
+
+    public void saveTasks() throws IOException {
+        for(Task task: tasks){
+            File newFile = new File(inpath + "/" + task.getTaskId());
+            newFile.createNewFile();
+
+            Files.write(newFile.toPath(), gson.toJson(task.getRawTask(), RawTask.class).getBytes());
         }
     }
 

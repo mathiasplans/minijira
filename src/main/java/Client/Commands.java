@@ -3,6 +3,7 @@ package Client;
 import Common.Task;
 import Common.TaskContainer;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -18,22 +19,31 @@ public class Commands {
     private void taskCommands(String[] tokens, int level){
         switch (tokens[level]){
             case "create":
+                // Kui argumendiks on antud ainult nimi
+                container.addTask(new Task(tokens[level + 1]));
                 break;
             case "info":
+                printTask(Long.parseLong(tokens[level + 1]));
                 break;
             case "complete":
+                container.getById(Long.parseLong(tokens[level + 1])).complete();
                 break;
         }
     }
 
     private void printTask(long id){
-        Task task = container.getById(id);
-        // Temporary
-        System.out.println("ID: " + task.getTaskId() +
-                            "Title: " + task.getTitle() +
-                            "Description: " + task.getDescription() +
-                            "Reported " + task.getDateCreatedMS() +
-                            " by " + task.getCreatedBy());
+        try {
+            Task task = container.getById(id);
+            // Temporary
+            System.out.println("ID: " + task.getTaskId() + "\n" +
+                    "Title: " + task.getTitle() + "\n" +
+                    "Description: " + task.getDescription() + "\n" +
+                    "Reported " + task.getDateCreatedMS() +
+                    " by " + task.getCreatedBy() + "\n" +
+                    "Completed: " + task.isCompleted());
+        }catch (NullPointerException e){
+            System.out.println("Task with this ID does not exist");
+        }
     }
 
     private void printTasks(List<Task> tasks){
@@ -43,7 +53,7 @@ public class Commands {
         }
     }
 
-    public void handle(String command) throws IllegalArgumentException {
+    public void handle(String command) throws IllegalArgumentException, IOException {
         /**
          * Command structure
          * [area] [operation] [argument(s)]
@@ -70,6 +80,10 @@ public class Commands {
                         printTasks(container.getTasks(Long.parseLong(tokens[1])));
                         break;
                 }
+                break;
+
+            case "save":
+                container.saveTasks();
                 break;
         }
     }

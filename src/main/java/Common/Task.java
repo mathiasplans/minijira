@@ -31,6 +31,19 @@ public class Task {
     // GitHub
     final GitHub gitHub;
 
+    public Task(String name){
+        this.title = name;
+        dateCreatedMS = commonTime.getTime();
+        gitHub = null;
+        gitMap = new HashMap<GHRepository, List<GHBranch>>();
+        this.taskId = order;
+        order++;
+        createdBy = null;
+        assignedEmployees = new ArrayList<>();
+        boards = new ArrayList<>();
+
+    }
+
     public Task(String name, String description, long board, long deadline, User author, int priority, GitHub gitHub){
         this.title = name;
         this.description = description;
@@ -57,37 +70,48 @@ public class Task {
     }
 
     public Task(RawTask source, GitHub gitHub){
-        createdBy = new User("temp", source.createdBy);
-        dateCreatedMS = source.dateCreatedMS;
-        deadlineMS = source.deadlineMS;
-        description = source.description;
-        isCompleted = source.isCompleted;
-        masterTaskId = source.masterTaskId;
-        title = source.title;
-        taskId = source.taskId;
-        priority = source.priority;
-        assignedEmployees = new ArrayList<>();
-
-        for(Long id: source.assignedEmployees){
-            assignedEmployees.add(new User("temp", id));
-        }
-
-        boards = new ArrayList<>();
-
-        for(Long board: source.boards){
-            boards.add(board);
-        }
-
         // GitHub integration
         gitMap = new HashMap<GHRepository, List<GHBranch>>();
 
         this.gitHub = gitHub;
+
+        boards = new ArrayList<>();
+
+        assignedEmployees = new ArrayList<>();
+
+        if(source != null) {
+            createdBy = new User("temp", source.createdBy);
+            dateCreatedMS = source.dateCreatedMS;
+            deadlineMS = source.deadlineMS;
+            description = source.description;
+            isCompleted = source.isCompleted;
+            masterTaskId = source.masterTaskId;
+            title = source.title;
+            taskId = source.taskId;
+            priority = source.priority;
+
+            for (Long id : source.assignedEmployees) {
+                assignedEmployees.add(new User("temp", id));
+            }
+
+            for (Long board : source.boards) {
+                boards.add(board);
+            }
+        }else{
+            dateCreatedMS = -1;
+            taskId = -1;
+            createdBy = null;
+        }
     }
 
     public RawTask getRawTask(){
         RawTask out = new RawTask();
 
-        out.createdBy = createdBy.getId();
+        if(createdBy != null)
+            out.createdBy = createdBy.getId();
+        else
+            out.createdBy = -1L;
+
         out.dateCreatedMS = dateCreatedMS;
         out.deadlineMS = deadlineMS;
         out.description = description;
@@ -97,17 +121,23 @@ public class Task {
         out.taskId = taskId;
         out.priority = priority;
 
-        out.assignedEmployees = new long[assignedEmployees.size()];
+        if(assignedEmployees != null) {
+            out.assignedEmployees = new long[assignedEmployees.size()];
 
-        for(int i = 0; i < out.assignedEmployees.length; i++){
-            out.assignedEmployees[i] = assignedEmployees.get(i).getId();
-        }
+            for (int i = 0; i < out.assignedEmployees.length; i++) {
+                out.assignedEmployees[i] = assignedEmployees.get(i).getId();
+            }
+        }else
+            out.assignedEmployees = new long[]{-1L};
 
-        out.boards = new long[boards.size()];
+        if(boards !=null) {
+            out.boards = new long[boards.size()];
 
-        for(int i = 0; i < out.boards.length; i++){
-            out.boards[i] = boards.get(i);
-        }
+            for (int i = 0; i < out.boards.length; i++) {
+                out.boards[i] = boards.get(i);
+            }
+        }else
+            out.boards = new long[]{-1L};
 
         return out;
     }

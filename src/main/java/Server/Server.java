@@ -7,8 +7,7 @@ import java.net.Socket;
 import messages.*;
 
 public class Server {
-
-    public static void main(String[] args) throws Exception {
+    public void serverDaemon() throws IOException{
         try (ServerSocket ss = new ServerSocket(1337)) {
             System.out.println("Server established");
             while(true) {
