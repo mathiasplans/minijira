@@ -45,4 +45,33 @@ public class TaskContainer {
     public void removeTask(Task task){
         tasks.remove(task);
     }
+
+    public List<Task> getTasks(){
+        return tasks;
+    }
+
+    public List<Task> getTasks(long boardId){
+        List<Task> newTasks = new ArrayList<>();
+
+        for(Task task: tasks){
+            for(long board: task.getBoards()){
+                if(board == boardId){
+                    newTasks.add(task);
+                    break;
+                }
+            }
+        }
+
+        return newTasks;
+    }
+
+    public Task getById(long id){
+        for(Task task: tasks){
+            if(task.getTaskId() == id){
+                return task;
+            }
+        }
+
+        return null;
+    }
 }
