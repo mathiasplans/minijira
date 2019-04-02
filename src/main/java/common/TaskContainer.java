@@ -20,9 +20,8 @@ public class TaskContainer {
         this.tasks = new ArrayList<>();
     }
 
-    public TaskContainer(String path) throws IOException {
+    private void importTasks(String path) throws IOException {
         inpath = path;
-        tasks = new ArrayList<>();
 
         File directory = new File(path);
 
@@ -31,24 +30,31 @@ public class TaskContainer {
         for(File file: files){
             tasks.add(new Task(gson.fromJson(Files.readString(file.toPath()), RawTask.class), null /* for now */));
         }
+
+        // Get the biggest ID
+        long biggestTaskId = -1;
+        for(Task task: tasks){
+            if(task.getTaskId() > biggestTaskId)
+                biggestTaskId = task.getTaskId();
+        }
+
+        // Set new order. This ensures that old Task IDs don't get overwritten
+        Task.setOrder(biggestTaskId + 1);
+    }
+
+    public TaskContainer(String path) throws IOException {
+        tasks = new ArrayList<>();
+        importTasks(path);
     }
 
     public TaskContainer(Path path) throws IOException {
-        inpath = path.toString();
         tasks = new ArrayList<>();
-
-        File directory = new File(path.toString());
-
-        File[] files = directory.listFiles();
-
-        for(File file: files){
-            tasks.add(new Task(gson.fromJson(Files.readString(file.toPath()), RawTask.class), null /* for now */));
-        }
+        importTasks(path.toString());
     }
 
-    public void saveTasks() throws IOException {
+    public void saveTasks(String path) throws IOException {
         for(Task task: tasks){
-            File newFile = new File(inpath, String.valueOf(task.getTaskId()));
+            File newFile = new File(path, String.valueOf(task.getTaskId()));
             newFile.createNewFile();
 
             try {
@@ -60,16 +66,15 @@ public class TaskContainer {
         }
     }
 
-    public void saveTasks(String path) throws IOException {
-        for(Task task: tasks){
-            File newFile = new File(path + "/" + task.getTaskId());
-            newFile.createNewFile();
-
-            Files.write(newFile.toPath(), gson.toJson(task.getRawTask(), RawTask.class).getBytes());
-        }
+    public void saveTasks() throws IOException {
+        saveTasks(inpath);
     }
 
-    public void addTask(Task task){
+    public void addTask(Task task) throws IllegalArgumentException {
+        // Check if task already exists!
+        Task testTask = getById(task.getTaskId());
+        if(testTask != null)
+            throw new IllegalArgumentException("Task with given ID already exists");
         tasks.add(task);
     }
 

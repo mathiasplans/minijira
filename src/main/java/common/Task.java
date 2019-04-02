@@ -23,7 +23,7 @@ public class Task {
     final private List<Long> boards;
 
     // Increments with every construct
-    static int order = 0;
+    static long order = 0;
 
     // Time getter
     static Date commonTime = new Date();
@@ -241,11 +241,11 @@ public class Task {
         return boards;
     }
 
-    public static int getOrder() {
+    public static long getOrder() {
         return order;
     }
 
-    public static void setOrder(int order) {
+    public static void setOrder(long order) {
         Task.order = order;
     }
 
@@ -259,5 +259,69 @@ public class Task {
 
     public GitHub getGitHub() {
         return gitHub;
+    }
+
+    private String displayDescription(int width){
+        // Split the description into 43 character sections
+        if(this.description == null)
+            return String.format("| %-41s |\n", "No description given");
+
+        String[] lines = this.description.split("(?<=\\G.{" + (width - 4) + "})");
+        String endResult = new String("");
+        StringBuilder builder = new StringBuilder(this.description.length() + 100);
+        for(String line: lines){
+            builder.append("| ");
+            builder.append(line);
+            builder.append(" |");
+        }
+
+        return new String(builder);
+    }
+
+    private String displayAssignees(int width){
+        // Split the description into 43 character sections
+        StringBuilder builder = new StringBuilder(this.assignedEmployees.size() + 100);
+
+        // Header
+        builder.append(
+                String.format(
+                        "| Assigned to: %-28s |\n",
+                        ""
+                )
+        );
+
+        if(assignedEmployees.isEmpty())
+            builder.append(String.format("|       No users assigned to this task %-4s |\n", ""));
+
+        else{
+            for (User user : assignedEmployees) {
+                builder.append(
+                        String.format(
+                                "|       %-28s %5s> |\n",
+                                this.createdBy.getName(),
+                                "<" + this.createdBy.getId()
+                        )
+                );
+            }
+        }
+
+        return new String(builder);
+    }
+
+    @Override
+    public String toString() {
+        return "_____________________________________________\n" + // 45 _
+                String.format("| %-4d  %-35s |\n", this.taskId, this.title) + // 45
+                String.format("|%-43s|\n", "") +
+                displayDescription(45) +
+                String.format("|%-43s|\n", "") +
+                String.format("| Reported: %-31d |\n", this.dateCreatedMS) +
+                String.format("| Deadline: %-31d |\n", this.deadlineMS) +
+                String.format("|%-43s|\n", "") +
+                String.format("| Reported by: %-21s %5s> |\n", this.createdBy.getName(), "<" + this.createdBy.getId()) +
+                displayAssignees(45) +
+                String.format("|%-43s|\n", "") +
+                "|___________________________________________|\n";
+
     }
 }

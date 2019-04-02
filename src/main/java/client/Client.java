@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.Scanner;
 
 import common.TaskContainer;
+import common.UserContainer;
 import messages.*;
 
 public class Client {
@@ -22,7 +23,8 @@ public class Client {
             Message messenger = new Message(out, in, handler);
 
             TaskContainer tasks = new TaskContainer(Path.of("src", "test", "resources", "tasks"));
-            Commands commands = new Commands(tasks);
+            UserContainer users = new UserContainer();
+            Commands commands = new Commands(tasks, users);
 
             Scanner scin = new Scanner(System.in);
             String lastCommand;
