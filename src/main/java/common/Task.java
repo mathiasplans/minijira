@@ -1,4 +1,4 @@
-package Common;
+package common;
 
 import data.RawTask;
 import org.kohsuke.github.GHBranch;

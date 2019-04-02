@@ -1,5 +1,4 @@
-import Server.Server;
-import org.kohsuke.github.GitHub;
+import server.Server;
 
 public class ServerTest {
     public static void main(String[] args) throws Exception {

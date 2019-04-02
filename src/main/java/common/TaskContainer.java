@@ -1,11 +1,13 @@
-package Common;
+package common;
 
 import com.google.gson.Gson;
 import data.RawTask;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,12 +33,30 @@ public class TaskContainer {
         }
     }
 
+    public TaskContainer(Path path) throws IOException {
+        inpath = path.toString();
+        tasks = new ArrayList<>();
+
+        File directory = new File(path.toString());
+
+        File[] files = directory.listFiles();
+
+        for(File file: files){
+            tasks.add(new Task(gson.fromJson(Files.readString(file.toPath()), RawTask.class), null /* for now */));
+        }
+    }
+
     public void saveTasks() throws IOException {
         for(Task task: tasks){
-            File newFile = new File(inpath + "/" + task.getTaskId());
+            File newFile = new File(inpath, String.valueOf(task.getTaskId()));
             newFile.createNewFile();
 
-            Files.write(newFile.toPath(), gson.toJson(task.getRawTask(), RawTask.class).getBytes());
+            try {
+                Files.createFile(newFile.toPath());
+                Files.write(newFile.toPath(), gson.toJson(task.getRawTask(), RawTask.class).getBytes());
+            }catch(FileAlreadyExistsException e){
+                // ignore, if exists, overwrite
+            }
         }
     }
 

@@ -1,6 +1,4 @@
-package Common;
-
-import Common.Permissions;
+package common;
 
 import java.util.ArrayList;
 import java.util.HashMap;

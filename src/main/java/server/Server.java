@@ -1,4 +1,4 @@
-package Server;
+package server;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -9,7 +9,7 @@ import messages.*;
 public class Server {
     public void serverDaemon() throws IOException{
         try (ServerSocket ss = new ServerSocket(1337)) {
-            System.out.println("Server established");
+            System.out.println("server established");
             while(true) {
                 System.out.println("Now listening to localhost:1337");
                 try {
@@ -22,7 +22,7 @@ public class Server {
                                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                                 DataInputStream in = new DataInputStream(socket.getInputStream())
                         ){
-                            System.out.println("Client connected, waiting for data");
+                            System.out.println("client connected, waiting for data");
 
                             // Message object
                             ServerMessage handler = new ServerMessage();

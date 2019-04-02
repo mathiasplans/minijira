@@ -1,10 +1,11 @@
-package Client;
+package client;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Path;
 import java.util.Scanner;
 
-import Common.TaskContainer;
+import common.TaskContainer;
 import messages.*;
 
 public class Client {
@@ -13,14 +14,14 @@ public class Client {
              DataOutputStream out = new DataOutputStream(socket.getOutputStream());
              DataInputStream in = new DataInputStream(socket.getInputStream())) {
 
-            // NOTE: only client side operations are wotking atm. Interaction with Server is meaningless
+            // NOTE: only client side operations are wotking atm. Interaction with server is meaningless
             System.out.println("Connected to localhost:1337");
 
             // Message object
             ClientMessage handler = new ClientMessage();
             Message messenger = new Message(out, in, handler);
 
-            TaskContainer tasks = new TaskContainer("src/main/resources/tasks");
+            TaskContainer tasks = new TaskContainer(Path.of("src", "test", "resources", "tasks"));
             Commands commands = new Commands(tasks);
 
             Scanner scin = new Scanner(System.in);
