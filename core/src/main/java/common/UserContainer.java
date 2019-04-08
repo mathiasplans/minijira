@@ -32,7 +32,14 @@ public class UserContainer {
         return null;
     }
 
-    public long
+    public User getByName(String name){
+        for(User user: users){
+            if(user.getName().equals(name))
+                return user;
+        }
+
+        return null;
+    }
 
 
     public String getName(long id){

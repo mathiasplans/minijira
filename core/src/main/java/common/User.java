@@ -10,13 +10,18 @@ public class User {
     final private long id;
     final private List<Long> projects;
     final private Map<Long, Permissions> permissions;
+    final private byte[] hash;
+    final private byte[] salt;
 
-    public User(String name, long id) {
+    public User(String name, long id, byte[] hash, byte[] salt) {
         this.name = name;
         this.id = id;
 
         projects = new ArrayList<>();
         permissions = new HashMap<>();
+
+        this.hash = hash;
+        this.salt = salt;
     }
 
     public String getName() {

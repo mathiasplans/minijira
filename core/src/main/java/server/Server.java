@@ -26,10 +26,10 @@ public class Server {
 
                             // Message object
                             ServerMessage handler = new ServerMessage();
-                            Message messenger = new Message(out, in, handler);
+                            Message messenger = new Message(null, out, in, handler);
 
-                            String data = messenger.readMessage();
-                            System.out.println("Data received: " + data);
+//                            String data = messenger.readMessage();
+//                            System.out.println("Data received: " + data);
 
 //                            switch (messenger.getMessagType()){
 //                                case FILE:

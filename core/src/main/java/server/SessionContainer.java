@@ -5,6 +5,7 @@ import common.UserContainer;
 import data.RawLogin;
 import messages.Session;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,11 +28,19 @@ public class SessionContainer {
         return null;
     }
 
-    public Session createSession(RawLogin login){
+    public Session createSession(RawLogin login, Socket connection){
         Session out = new Session(
                 SecurityHelper.generateSessionKey(),
                 idCounter++,
-                users.
-        )
+                users.getByName(login.username).getId(),
+                connection.getInetAddress().getHostAddress(),
+                connection.getPort(),
+                connection.getLocalAddress().getHostAddress(),
+                connection.getLocalPort()
+        );
+
+        sessions.add(out);
+
+        return out;
     }
 }
