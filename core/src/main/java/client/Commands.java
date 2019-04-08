@@ -128,7 +128,7 @@ public class Commands {
 
             case "board":
                 switch (tokens[2]){
-                    case "tasks":
+                    case "src/test/resources/tasks":
                         taskCommands(tokens, 3);
                         break;
                     case "list":
