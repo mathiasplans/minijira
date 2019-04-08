@@ -1,6 +1,3 @@
-[submodule "protocol"]
-	path = protocol
-	url = git@github.com:mathiasplans/minijira-protocol.git
 [submodule "minijira-protocol"]
 	path = minijira-protocol
 	url = git@github.com:mathiasplans/minijira-protocol.git
