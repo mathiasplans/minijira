@@ -7,6 +7,7 @@ import messages.Session;
 
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SessionContainer {
@@ -19,9 +20,9 @@ public class SessionContainer {
         users = container;
     }
 
-    public Session getSession(long id){
+    public Session getSession(byte[] key){
         for(Session session: sessions){
-            if(session.getSessionid() == id)
+            if(Arrays.equals(session.getSessionKey(), key))
                 return session;
         }
 

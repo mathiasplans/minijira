@@ -72,6 +72,7 @@ public class Commands {
     }
 
     private void taskCommands(String[] tokens, int level){
+        // Update the task which is queried
         try {
             switch (tokens[level]) {
                 case "create":

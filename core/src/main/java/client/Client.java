@@ -20,8 +20,7 @@ public class Client {
 
             // Message object
             ClientMessage handler = new ClientMessage();
-            Session session = new Session();
-            Message messenger = new Message(session, out, in, handler);
+            Message messenger = new Message(null, out, in, handler);
 
             TaskContainer tasks = new TaskContainer(Path.of("src", "test", "resources", "src/test/resources/tasks"));
             UserContainer users = new UserContainer();

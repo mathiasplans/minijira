@@ -28,17 +28,6 @@ public class Server {
                             ServerMessage handler = new ServerMessage();
                             Message messenger = new Message(null, out, in, handler);
 
-//                            String data = messenger.readMessage();
-//                            System.out.println("Data received: " + data);
-
-//                            switch (messenger.getMessagType()){
-//                                case FILE:
-//                                    System.out.println("Handled file request");
-//                                    break;
-//                                case ECHO:
-//                                    System.out.println("Echoed the message");
-//                                    break;
-//                            }
 
                         } catch (IOException e){
                             System.out.println("Thread failed");

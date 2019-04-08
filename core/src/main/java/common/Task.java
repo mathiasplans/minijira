@@ -80,7 +80,7 @@ public class Task {
         assignedEmployees = new ArrayList<>();
 
         if(source != null) {
-            createdBy = new User("temp", source.createdBy);
+            createdBy = new User("temp", source.createdBy, new byte[]{}, new byte[]{});
             dateCreatedMS = source.dateCreatedMS;
             deadlineMS = source.deadlineMS;
             description = source.description;
@@ -91,7 +91,7 @@ public class Task {
             priority = source.priority;
 
             for (Long id : source.assignedEmployees) {
-                assignedEmployees.add(new User("temp", id));
+                assignedEmployees.add(new User("temp", id, new byte[]{}, new byte[]{}));
             }
 
             for (Long board : source.boards) {
@@ -105,21 +105,20 @@ public class Task {
     }
 
     public RawTask getRawTask(){
-        RawTask out = new RawTask();
+        RawTask out = new RawTask(
+                taskId,
+                isCompleted,
+                title,
+                description,
+                priority, -1L,
+                deadlineMS,
+                dateCreatedMS,
+                masterTaskId,
+                new long[]{-1L},
+                new long[]{-1L});
 
         if(createdBy != null)
             out.createdBy = createdBy.getId();
-        else
-            out.createdBy = -1L;
-
-        out.dateCreatedMS = dateCreatedMS;
-        out.deadlineMS = deadlineMS;
-        out.description = description;
-        out.isCompleted = isCompleted;
-        out.masterTaskId = masterTaskId;
-        out.title = title;
-        out.taskId = taskId;
-        out.priority = priority;
 
         if(assignedEmployees != null) {
             out.assignedEmployees = new long[assignedEmployees.size()];
@@ -127,8 +126,7 @@ public class Task {
             for (int i = 0; i < out.assignedEmployees.length; i++) {
                 out.assignedEmployees[i] = assignedEmployees.get(i).getId();
             }
-        }else
-            out.assignedEmployees = new long[]{-1L};
+        }
 
         if(boards !=null) {
             out.boards = new long[boards.size()];
@@ -136,8 +134,7 @@ public class Task {
             for (int i = 0; i < out.boards.length; i++) {
                 out.boards[i] = boards.get(i);
             }
-        }else
-            out.boards = new long[]{-1L};
+        }
 
         return out;
     }
