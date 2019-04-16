@@ -3,6 +3,9 @@ package client;
 import data.*;
 import messages.JiraMessageHandler;
 
+/**
+ * Communication handler. What the client does when it receives a type of a message
+ */
 public class ClientMessage implements JiraMessageHandler {
     @Override
     public RawError createTask(RawTask newTask) {

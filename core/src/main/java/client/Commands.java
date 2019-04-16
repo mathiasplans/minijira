@@ -3,6 +3,7 @@ package client;
 import common.Task;
 import common.TaskContainer;
 import common.UserContainer;
+import messages.JiraMessageHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -11,14 +12,14 @@ import java.util.List;
 /**
  * This class will take user input (as a string) and then handles it
  */
-public class Commands {
+class Commands {
     final private TaskContainer taskContainer;
     final private UserContainer userContainer;
 
     /**
      * Constructor, initializes task and user containers with given values
-     * @param taskContainer
-     * @param userContainer
+     * @param taskContainer TaskContainer object, is filled with tasks!
+     * @param userContainer UserContainer object, is filled with users!
      */
     public Commands(TaskContainer taskContainer, UserContainer userContainer) {
         this.taskContainer = taskContainer;
@@ -173,6 +174,10 @@ public class Commands {
         String[] tokens = command.split(" ");
 
         switch (tokens[0]){
+            case "quit":
+                // TODO: "Do you want to save?" dialog
+                System.exit(0);
+                break;
             case "man":
                 printManual();
                 break;

@@ -7,6 +7,7 @@ import org.kohsuke.github.GitHub;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,7 +19,7 @@ import java.util.List;
  */
 public class TaskContainer {
     final private List<Task> tasks;
-    static final Gson gson = new Gson();
+    private static final Gson gson = new Gson();
     private String inpath;
 
     // Task creation
@@ -56,24 +57,45 @@ public class TaskContainer {
 
     /**
      * Imports thasks from given paths. The path
-     * has to point to a directory. The tasks have to be in JSON
+     * has to point to a directory/file. The tasks have to be in JSON
      * format.
-     * @param path Path to the dircectory where the tasks are stored
+     * @param path Path to the directory/file where the tasks are stored
      * @throws IOException If file IO fails
      */
     private void importTasks(String path) throws IOException {
+        // Set the save path
         inpath = path;
 
-        File directory = new File(path);
+        /* Fill the list */
+        // File/Directory
+        File dile = new File(path);
 
-        File[] files = directory.listFiles();
+        // Check if file exists
+        if(!dile.exists())
+            throw new IllegalArgumentException("Given path does not point to neither file nor directory");
 
-        if(files != null) {
-            for (File file : files) {
-                tasks.add(new Task(gson.fromJson(Files.readString(file.toPath()), RawTask.class), null /* for now */));
+        // If the File object points at directory
+        if (dile.isDirectory()){
+            File[] files = dile.listFiles();
+
+            if (files != null) {
+                for (File file : files) {
+                    newTask(gson.fromJson(Files.readString(file.toPath()), RawTask.class));
+                }
+            }
+
+        }
+
+        // If the File object points at file
+        else if(dile.isFile()){
+            List<String> lines = Files.readAllLines(dile.toPath(), StandardCharsets.UTF_8);
+            for(String line: lines){
+                if(!"".equals(line))
+                    newTask(gson.fromJson(line, RawTask.class));
             }
         }
 
+        /* Determine the order */
         // Get the biggest ID
         long biggestTaskId = -1;
         for(Task task: tasks){
@@ -91,16 +113,36 @@ public class TaskContainer {
      * @throws IOException If file IO fails
      */
     public void saveTasks(String path) throws IOException {
-        for(Task task: tasks){
-            File newFile = new File(path, String.valueOf(task.getTaskId()));
-            newFile.createNewFile();
+        File dile = new File(path);
 
-            try {
-                Files.createFile(newFile.toPath());
-                Files.write(newFile.toPath(), gson.toJson(task.getRawTask(), RawTask.class).getBytes());
-            }catch(FileAlreadyExistsException e){
-                // ignore, if exists, overwrite
+        // Check if file exists
+        if(!dile.exists())
+            throw new IllegalArgumentException("Given path does not point to neither file nor directory");
+
+        // If the File object points at directory
+        if(dile.isDirectory()){
+            for (Task task : tasks) {
+                File newFile = new File(path, String.valueOf(task.getTaskId()));
+                newFile.createNewFile();
+
+                try {
+                    Files.createFile(newFile.toPath());
+                    Files.write(newFile.toPath(), gson.toJson(task.getRawTask(), RawTask.class).getBytes());
+                } catch (FileAlreadyExistsException e) {
+                    // ignore, if exists, overwrite
+                }
             }
+        }
+
+        // If the File object points at file
+        else if(dile.isFile()){
+            StringBuilder builder = new StringBuilder();
+            for(Task task: tasks){
+                builder.append(gson.toJson(task, RawTask.class));
+                builder.append("\n");
+            }
+
+            Files.write(dile.toPath(), builder.toString().getBytes());
         }
     }
 
@@ -110,12 +152,12 @@ public class TaskContainer {
      * they were imported.
      * @throws IOException If file IO fails
      * @throws IllegalStateException If the tasks weren't originally imported.
-     *                               TaskContainer doesn't know the path! Call saveTasks(String path) variant instead
+     *                               TaskContainer doesn't know the path! Call saveUsers(String path) variant instead
      */
     public void saveTasks() throws IOException {
         if(inpath == null)
             throw new IllegalStateException(
-                    "Can not save tasks: path to the save directory does not exist. Call saveTasks(String path) variant instead"
+                    "Can not save tasks: path to the save directory does not exist. Call saveUsers(String path) variant instead"
             );
 
         saveTasks(inpath);
@@ -187,6 +229,19 @@ public class TaskContainer {
         Task newTask = new Task(task, gitHub);
         tasks.add(newTask);
         return newTask;
+    }
+
+    /**
+     * Updates the given task. Replaces it with the new version
+     * @param task the new and better task
+     * @return the created task
+     */
+    public Task updateTask(RawTask task){
+        // Remove the previous version from the list
+        tasks.remove(getById(task.taskId));
+
+        // Replace it with the new version
+        return newTask(task);
     }
 
     /**

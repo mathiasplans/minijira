@@ -1,18 +1,20 @@
 package common;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import data.RawUser;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.*;
 
 /**
  * Class which defines the user
  */
 public class User {
-    private String name;
+    private final String name;
+    private String email;
     private final long id;
-    private final List<Long> projects;
-    private final Map<Long, Permissions> permissions;
+    private long lastOnline;
+    private final List<Long> friends = new ArrayList<>();
+    private final Map<Long, Permissions> permissions = new HashMap<>();
     private final byte[] hash;
     private final byte[] salt;
 
@@ -28,11 +30,60 @@ public class User {
         this.name = name;
         this.id = id;
 
-        projects = new ArrayList<>();
-        permissions = new HashMap<>();
-
         this.hash = hash;
         this.salt = salt;
+    }
+
+    public User(@NotNull RawUser user){
+        name = user.username;
+        email = user.userEmail;
+        id = user.userId;
+        hash = user.passwordHash;
+        salt = null;
+
+        // Fill the projects and permissions
+        for(int i = 0; i < user.projectRights.length; i++){
+            permissions.put(user.projects[i], Permissions.getPermission(user.projectRights[i]));
+        }
+
+        // Fill the friends
+        for(long friendID: user.friendList){
+            friends.add(friendID);
+        }
+    }
+
+    public RawUser getRawUser(){
+        RawUser out = new RawUser(
+                id,
+                name,
+                hash,
+                email,
+                lastOnline,
+                null,
+                null,
+                null
+        );
+
+        // Fill the projects and permissions
+        out.projects = new long[permissions.size()];
+        out.projectRights = new int[permissions.size()];
+
+        Set<Long> keys = permissions.keySet();
+        int index = 0;
+        for(long projectID: keys){
+            out.projects[index] = projectID;
+            out.projectRights[index] = permissions.get(projectID).getIndex();
+            index++;
+        }
+
+        // Fill the friends
+        out.friendList = new long[friends.size()];
+
+        for (int i = 0; i < out.friendList.length; i++) {
+            out.friendList[i] = friends.get(i);
+        }
+
+        return out;
     }
 
     /**
@@ -44,27 +95,11 @@ public class User {
     }
 
     /**
-     * Set the name of the user
-     * @param name name to be assigned to the user
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
      * Get the ID of the user
      * @return ID of the user
      */
     public long getId() {
         return id;
-    }
-
-    /**
-     * Get the projects where this user participates
-     * @return List of the projects
-     */
-    public List<Long> getProjects() {
-        return projects;
     }
 
     /**
