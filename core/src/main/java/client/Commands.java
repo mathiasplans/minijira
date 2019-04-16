@@ -111,7 +111,7 @@ public class Commands {
         switch (tokens[level]) {
             case "create":
                 // Kui argumendiks on antud ainult nimi
-                taskContainer.addTask(new Task(tokens[level + 1]));
+                taskContainer.newTask(tokens[level + 1]);
                 break;
             case "info":
                 Task infoTask = taskContainer.getById(Long.parseLong(tokens[level + 1]));

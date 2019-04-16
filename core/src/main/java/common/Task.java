@@ -27,31 +27,26 @@ public class Task {
     private final List<User> assignedEmployees = new ArrayList<>();
     private final List<Long> boards = new ArrayList<>();
 
-    // Increments with every construct
-    static long order = 0;
-
-    // Time getter
-    static Date commonTime = new Date();
-
     // GitHub
     private final GitHub gitHub;
 
     /**
-     * Main constructor. Creates a task with given name
+     * Main constructor. Creates a task with given name and ID
+     * @param id ID of the task
      * @param name name of the task
      */
-    public Task(String name){
+    public Task(long id, String name){
         this.title = name;
-        dateCreatedMS = commonTime.getTime();
+        dateCreatedMS = System.currentTimeMillis();
         gitHub = null;
         gitMap = new HashMap<GHRepository, List<GHBranch>>();
-        this.taskId = order;
-        order++;
+        this.taskId = id;
         createdBy = null;
     }
 
     /**
      * Secondary constructor. Initializes all the fields
+     * @param id ID of the task
      * @param name name of the task
      * @param description description of the task
      * @param board board where the task belongs
@@ -60,12 +55,11 @@ public class Task {
      * @param priority priority of the task
      * @param gitHub
      */
-    public Task(String name, String description, long board, long deadline, User author, int priority, GitHub gitHub){
+    public Task(long id, String name, String description, long board, long deadline, User author, int priority, GitHub gitHub){
         this.title = name;
         this.description = description;
 
-        this.taskId = order;
-        order++;
+        this.taskId = id;
 
         boards.add(board);
 
@@ -73,7 +67,7 @@ public class Task {
         this.priority = priority;
 
         // Time
-        dateCreatedMS = commonTime.getTime();
+        dateCreatedMS = System.currentTimeMillis();
         deadlineMS = deadline;
 
         // GitHub integration
@@ -138,20 +132,16 @@ public class Task {
         if(createdBy != null)
             out.createdBy = createdBy.getId();
 
-        if(assignedEmployees != null) {
-            out.assignedEmployees = new long[assignedEmployees.size()];
+        out.assignedEmployees = new long[assignedEmployees.size()];
 
-            for (int i = 0; i < out.assignedEmployees.length; i++) {
-                out.assignedEmployees[i] = assignedEmployees.get(i).getId();
-            }
+        for (int i = 0; i < out.assignedEmployees.length; i++) {
+            out.assignedEmployees[i] = assignedEmployees.get(i).getId();
         }
 
-        if(boards !=null) {
-            out.boards = new long[boards.size()];
+        out.boards = new long[boards.size()];
 
-            for (int i = 0; i < out.boards.length; i++) {
-                out.boards[i] = boards.get(i);
-            }
+        for (int i = 0; i < out.boards.length; i++) {
+            out.boards[i] = boards.get(i);
         }
 
         return out;
@@ -351,42 +341,6 @@ public class Task {
      */
     public List<Long> getBoards() {
         return boards;
-    }
-
-    /**
-     * Method for getting the order
-     * // TODO: to be removed
-     * @return order
-     */
-    public static long getOrder() {
-        return order;
-    }
-
-    /**
-     * Method for setting the order
-     * // TODO: to be removed
-     * @param order
-     */
-    public static void setOrder(long order) {
-        Task.order = order;
-    }
-
-    /**
-     * Date object
-     * // TODO: to be removed
-     * @return
-     */
-    public static Date getCommonTime() {
-        return commonTime;
-    }
-
-    /**
-     * Date object
-     * // TODO: to be removed
-     * @param commonTime
-     */
-    public static void setCommonTime(Date commonTime) {
-        Task.commonTime = commonTime;
     }
 
     /**

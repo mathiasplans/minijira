@@ -3,6 +3,7 @@ package common;
 import com.google.gson.Gson;
 import data.RawTask;
 import org.jetbrains.annotations.NotNull;
+import org.kohsuke.github.GitHub;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,10 +21,13 @@ public class TaskContainer {
     static final Gson gson = new Gson();
     private String inpath;
 
+    // Task creation
+    private long order = 0;
+    private final GitHub gitHub = null; // TODO
     /**
      * Default constructor. Initializes the list of the tasks
      */
-    public TaskContainer() {
+    public TaskContainer() throws IOException{
         this.tasks = new ArrayList<>();
     }
 
@@ -78,7 +82,7 @@ public class TaskContainer {
         }
 
         // Set new order. This ensures that old Task IDs don't get overwritten
-        Task.setOrder(biggestTaskId + 1);
+        order = biggestTaskId + 1;
     }
 
     /**
@@ -145,6 +149,44 @@ public class TaskContainer {
      */
     public void removeTask(long id){
         removeTask(getById(id));
+    }
+
+    /**
+     * Method for creating a new task into the container
+     * @param name name of the task
+     * @return the created task
+     */
+    public Task newTask(String name){
+        Task newTask = new Task(order++, name);
+        tasks.add(newTask);
+        return newTask;
+    }
+
+    /**
+     * Method for creating a new task into the container
+     * @param name name of the task
+     * @param description description of the task
+     * @param board board ID where this task belongs
+     * @param deadline deadline of the task
+     * @param author author of the task
+     * @param priority priority of the task
+     * @return the created task
+     */
+    public Task newTask(String name, String description, long board, long deadline, User author, int priority){
+        Task newTask = new Task(order++, name, description, board, deadline, author, priority, gitHub);
+        tasks.add(newTask);
+        return newTask;
+    }
+
+    /**
+     * Method for creating a new task into the container
+     * @param task RawTask object, converted from JSON
+     * @return the created task
+     */
+    public Task newTask(RawTask task){
+        Task newTask = new Task(task, gitHub);
+        tasks.add(newTask);
+        return newTask;
     }
 
     /**
