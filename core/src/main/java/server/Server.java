@@ -26,7 +26,7 @@ public class Server {
 
                             // Message object
                             ServerMessage handler = new ServerMessage();
-                            Message messenger = new Message(null, out, in, handler);
+                            ProtocolConnection messenger = new ProtocolConnection(null, out, in, handler);
 
 
                         } catch (IOException e){

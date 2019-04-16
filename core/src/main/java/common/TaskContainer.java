@@ -27,8 +27,10 @@ public class TaskContainer {
 
         File[] files = directory.listFiles();
 
-        for(File file: files){
-            tasks.add(new Task(gson.fromJson(Files.readString(file.toPath()), RawTask.class), null /* for now */));
+        if(files != null) {
+            for (File file : files) {
+                tasks.add(new Task(gson.fromJson(Files.readString(file.toPath()), RawTask.class), null /* for now */));
+            }
         }
 
         // Get the biggest ID

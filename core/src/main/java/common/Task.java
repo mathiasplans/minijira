@@ -315,7 +315,9 @@ public class Task {
                 String.format("| Reported: %-31d |\n", this.dateCreatedMS) +
                 String.format("| Deadline: %-31d |\n", this.deadlineMS) +
                 String.format("|%-43s|\n", "") +
-                String.format("| Reported by: %-21s %5s> |\n", this.createdBy.getName(), "<" + this.createdBy.getId()) +
+                String.format("| Reported by: %-21s %5s> |\n",
+                        (this.createdBy != null ? this.createdBy.getName() : "Unknown"),
+                        "<" + (this.createdBy != null ? this.createdBy.getId() : "")) +
                 displayAssignees(45) +
                 String.format("|%-43s|\n", "") +
                 "|___________________________________________|\n";

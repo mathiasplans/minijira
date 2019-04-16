@@ -19,7 +19,11 @@ public class Commands {
         this.userContainer = userContainer;
     }
 
-    private void taskSet(String[] tokens, int level) throws ArrayIndexOutOfBoundsException {
+    private void taskSet(String[] tokens, int level) {
+        if(tokens.length < level + 3) {
+            System.out.println("Task Set: Not enough arguments");
+            return;
+        }
         Task subject = taskContainer.getById(Long.parseLong(tokens[level + 1]));
         switch (tokens[level]){
             case "title":
@@ -49,11 +53,16 @@ public class Commands {
                 break;
 
             default:
-                System.out.println("Command does not exist: taskSet");
+                System.out.println("Task Set: Command does not exist");
         }
     }
 
-    private void taskAdd(String[] tokens, int level) throws ArrayIndexOutOfBoundsException {
+    private void taskAdd(String[] tokens, int level) {
+        if(tokens.length < level + 3){
+            System.out.println("Task Add: Not enough arguments");
+            return;
+        }
+
         Task subject = taskContainer.getById(Long.parseLong(tokens[level + 1]));
         switch (tokens[level]){
             case "board":
@@ -67,33 +76,41 @@ public class Commands {
                 break;
 
             default:
-                System.out.println("Command does not exist: taskAdd");
+                System.out.println("Task Add: Command does not exist");
         }
     }
 
     private void taskCommands(String[] tokens, int level){
+        if(tokens.length < level + 2){
+            System.out.println("Task: Not enough arguments");
+            return;
+        }
+
         // Update the task which is queried
-        try {
-            switch (tokens[level]) {
-                case "create":
-                    // Kui argumendiks on antud ainult nimi
-                    taskContainer.addTask(new Task(tokens[level + 1]));
-                    break;
-                case "info":
-                    System.out.println(taskContainer.getById(Long.parseLong(tokens[level + 1])).toString());
-                    break;
-                case "complete":
-                    taskContainer.getById(Long.parseLong(tokens[level + 1])).complete();
-                    break;
-                case "set":
-                    taskSet(tokens, level + 1);
-                default:
-                    System.out.println("Command does not exist: task");
-            }
-        }catch (ArrayIndexOutOfBoundsException e){
-            System.out.println("Error: Command called without giving arguments");
-        }catch (IllegalArgumentException e){
-            System.out.println(e.getMessage());
+        switch (tokens[level]) {
+            case "create":
+                // Kui argumendiks on antud ainult nimi
+                taskContainer.addTask(new Task(tokens[level + 1]));
+                break;
+            case "info":
+                Task infoTask = taskContainer.getById(Long.parseLong(tokens[level + 1]));
+                if(infoTask != null)
+                    System.out.println(infoTask.toString());
+                else
+                    System.out.println("Task with this ID does not exist");
+                break;
+            case "complete":
+                Task completeTask = taskContainer.getById(Long.parseLong(tokens[level + 1]));
+                if(completeTask != null)
+                    completeTask.complete();
+                else
+                    System.out.println("Task with this ID does not exist");
+                break;
+            case "set":
+                taskSet(tokens, level + 1);
+                break;
+            default:
+                System.out.println("Task: Command does not exist");
         }
     }
 

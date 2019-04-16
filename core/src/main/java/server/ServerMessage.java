@@ -1,56 +1,56 @@
 package server;
 
+import data.*;
 import messages.JiraMessageHandler;
-import messages.messagetypes.*;
 
 public class ServerMessage implements JiraMessageHandler {
     @Override
-    public ErrorMessage createTask(CreateTaskMessage message) {
+    public RawError createTask(RawTask newTask) {
         return null;
     }
 
     @Override
-    public ErrorMessage removeTask(RemoveTaskMessage message) {
+    public RawError removeTask(Long taskId) {
         return null;
     }
 
     @Override
-    public ErrorMessage updateTask(UpdateTaskMessage message) {
+    public RawError updateTask(RawTask updatedTask) {
         return null;
     }
 
     @Override
-    public ErrorMessage getServerTaskList(GetServerTaskListMessage message) {
+    public RawError getServerTaskList(Object unimplemented) {
         return null;
     }
 
     @Override
-    public ErrorMessage setSession(SetSessionMessage session) {
+    public RawError setSession(RawSession session) {
         return null;
     }
 
     @Override
-    public ErrorMessage login(LoginMessage message) {
+    public RawError login(RawLogin rawLogin) {
         return null;
     }
 
     @Override
-    public ErrorMessage getProjectList(GetProjectListMessage message) {
+    public RawError getProjectList() {
         return null;
     }
 
     @Override
-    public ErrorMessage setProjectList(SetProjectListMessage message) {
+    public RawError setProjectList(RawProjectNameList projectNames) {
         return null;
     }
 
     @Override
-    public ErrorMessage getProject(GetProjectMessage message) {
+    public RawError getProject(Long projectId) {
         return null;
     }
 
     @Override
-    public ErrorMessage setProject(SetProjectMessage message) {
+    public RawError setProject(RawProject rawProject) {
         return null;
     }
 }
