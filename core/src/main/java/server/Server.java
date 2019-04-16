@@ -7,6 +7,10 @@ import java.net.Socket;
 import messages.*;
 
 public class Server {
+    /**
+     * Daemon for Sever
+     * @throws IOException If IO fails
+     */
     public void serverDaemon() throws IOException{
         try (ServerSocket ss = new ServerSocket(1337)) {
             System.out.println("server established");

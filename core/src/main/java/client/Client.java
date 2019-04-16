@@ -9,7 +9,14 @@ import common.TaskContainer;
 import common.UserContainer;
 import messages.*;
 
+/**
+ * Class for client part of the minijira
+ */
 public class Client {
+    /**
+     * Daemon of the client
+     * @throws IOException If IO fails
+     */
     public void clientDaemon() throws IOException {
         try (Socket socket = new Socket("localhost", 1337);
              DataOutputStream out = new DataOutputStream(socket.getOutputStream());

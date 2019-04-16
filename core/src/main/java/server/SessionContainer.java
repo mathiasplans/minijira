@@ -10,6 +10,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Class for containing the sessions
+ * // TODO: In the third etapp
+ */
 public class SessionContainer {
     private final List<Session> sessions;
     private int idCounter = 0;

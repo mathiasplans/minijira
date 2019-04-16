@@ -3,6 +3,7 @@ package client;
 import common.Task;
 import common.TaskContainer;
 import common.UserContainer;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,12 +15,22 @@ public class Commands {
     final private TaskContainer taskContainer;
     final private UserContainer userContainer;
 
+    /**
+     * Constructor, initializes task and user containers with given values
+     * @param taskContainer
+     * @param userContainer
+     */
     public Commands(TaskContainer taskContainer, UserContainer userContainer) {
         this.taskContainer = taskContainer;
         this.userContainer = userContainer;
     }
 
-    private void taskSet(String[] tokens, int level) {
+    /**
+     * Command parser for 'task set ___'
+     * @param tokens parsed command split up
+     * @param level level of the parse, which word is handled from the tokens
+     */
+    private void taskSet(@NotNull String[] tokens, int level) {
         if(tokens.length < level + 3) {
             System.out.println("Task Set: Not enough arguments");
             return;
@@ -57,7 +68,12 @@ public class Commands {
         }
     }
 
-    private void taskAdd(String[] tokens, int level) {
+    /**
+     * Command parser for 'task add ___'
+     * @param tokens parsed command split up
+     * @param level level of the parse, which word is handled from the tokens
+     */
+    private void taskAdd(@NotNull String[] tokens, int level) {
         if(tokens.length < level + 3){
             System.out.println("Task Add: Not enough arguments");
             return;
@@ -80,7 +96,12 @@ public class Commands {
         }
     }
 
-    private void taskCommands(String[] tokens, int level){
+    /**
+     * Command parser for 'task ___'
+     * @param tokens parsed command split up
+     * @param level level of the parse, which word is handled from the tokens
+     */
+    private void taskCommands(@NotNull String[] tokens, int level){
         if(tokens.length < level + 2){
             System.out.println("Task: Not enough arguments");
             return;
@@ -114,13 +135,31 @@ public class Commands {
         }
     }
 
-    private void printTasks(List<Task> tasks){
+    /**
+     * Command for printing out multiple tasks
+     * @param tasks list of tasks to be prited out
+     */
+    private void printTasks(@NotNull List<Task> tasks){
         for(Task task: tasks){
             System.out.println(task.toString());
         }
     }
 
-    public void handle(String command) throws IllegalArgumentException, IOException {
+    /**
+     * Method for printing out the manual of the program
+     * // TODO: manual is empty at the moment
+     */
+    private void printManual(){
+        System.out.println("manual");
+    }
+
+    /**
+     * The root of the parser.
+     * @param command command to be parsed (command line input)
+     * @throws IllegalArgumentException If given command is empty
+     * @throws IOException If IO fails
+     */
+    public void handle(@NotNull String command) throws IOException {
         /*
          * Command structure
          * [area] [operation] [argument(s)]
@@ -133,13 +172,10 @@ public class Commands {
         // Tokenize the command
         String[] tokens = command.split(" ");
 
-        // Debug: print out command
-        for(String token: tokens){
-            System.out.print(token + " ");
-        }
-        System.out.println();
-
         switch (tokens[0]){
+            case "man":
+                printManual();
+                break;
             case "task":
                 taskCommands(tokens, 1);
                 break;
