@@ -1,6 +1,8 @@
 package common;
 
 import data.RawTask;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.kohsuke.github.GHBranch;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
@@ -8,19 +10,22 @@ import org.kohsuke.github.GitHub;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Class which defines the task
+ */
 public class Task {
-    final private Map<GHRepository, List<GHBranch>> gitMap;
-    final private long taskId;
+    private final Map<GHRepository, List<GHBranch>> gitMap;
+    private final long taskId;
     private boolean isCompleted = false;
     private String title;
     private String description;
     private int priority;
-    final private User createdBy;
+    private final User createdBy;
     private long deadlineMS;
-    final private long dateCreatedMS;
+    private final long dateCreatedMS;
     private long masterTaskId;
-    final private List<User> assignedEmployees;
-    final private List<Long> boards;
+    private final List<User> assignedEmployees = new ArrayList<>();
+    private final List<Long> boards = new ArrayList<>();
 
     // Increments with every construct
     static long order = 0;
@@ -29,8 +34,12 @@ public class Task {
     static Date commonTime = new Date();
 
     // GitHub
-    final GitHub gitHub;
+    private final GitHub gitHub;
 
+    /**
+     * Main constructor. Creates a task with given name
+     * @param name name of the task
+     */
     public Task(String name){
         this.title = name;
         dateCreatedMS = commonTime.getTime();
@@ -39,20 +48,24 @@ public class Task {
         this.taskId = order;
         order++;
         createdBy = null;
-        assignedEmployees = new ArrayList<>();
-        boards = new ArrayList<>();
-
     }
 
+    /**
+     * Secondary constructor. Initializes all the fields
+     * @param name name of the task
+     * @param description description of the task
+     * @param board board where the task belongs
+     * @param deadline deadline of the task, in MS form 1970
+     * @param author author of the task
+     * @param priority priority of the task
+     * @param gitHub
+     */
     public Task(String name, String description, long board, long deadline, User author, int priority, GitHub gitHub){
         this.title = name;
         this.description = description;
 
         this.taskId = order;
         order++;
-
-        boards = new ArrayList<>();
-        assignedEmployees = new ArrayList<>();
 
         boards.add(board);
 
@@ -69,15 +82,16 @@ public class Task {
         this.gitHub = gitHub;
     }
 
+    /**
+     * Secondary constructor. Constructs the task from RawTask.
+     * @param source RawTask object
+     * @param gitHub
+     */
     public Task(RawTask source, GitHub gitHub){
         // GitHub integration
         gitMap = new HashMap<GHRepository, List<GHBranch>>();
 
         this.gitHub = gitHub;
-
-        boards = new ArrayList<>();
-
-        assignedEmployees = new ArrayList<>();
 
         if(source != null) {
             createdBy = new User("temp", source.createdBy, new byte[]{}, new byte[]{});
@@ -104,6 +118,10 @@ public class Task {
         }
     }
 
+    /**
+     * Method for converting the Task object into RawTask
+     * @return RawTask object
+     */
     public RawTask getRawTask(){
         RawTask out = new RawTask(
                 taskId,
@@ -139,125 +157,253 @@ public class Task {
         return out;
     }
 
+    /**
+     * Method for completing the task
+     */
     public void complete(){
         isCompleted = true;
     }
 
+    /**
+     * Method for adding the task to a board
+     * @param board ID of the board where the task is added
+     */
     public void addBoard(long board){
         boards.add(board);
     }
 
+    /**
+     * Method for removing the task from a board
+     * @param board ID of the board whence the task is to be removed
+     */
     public void removeBoard(long board){
         boards.remove(board);
     }
 
+    /**
+     * Method for adding assignees to the task
+     * @param assignee User object of the user to whom the task is assigned
+     */
     public void addAssignee(User assignee){
         assignedEmployees.add(assignee);
     }
 
+    /**
+     * Method for removing assignees from the task
+     * @param assignee User onbject of the user from who the task is unassigned
+     */
     public void removeAssignee(User assignee){
         assignedEmployees.remove(assignee);
     }
 
-
+    /**
+     * Create a branch under the task
+     * // TODO
+     * @param repository
+     * @param sourceBranch
+     * @throws IOException
+     */
     public void addBranch(String repository, String sourceBranch) throws IOException {
         GHRepository repo = gitHub.getRepository(repository);
         GHBranch branch = repo.getBranch(sourceBranch);
         // TODO
     }
 
+    /**
+     * // TODO
+     * @return
+     */
     public Map<GHRepository, List<GHBranch>> getGitMap() {
         return gitMap;
     }
 
+    /**
+     * Mehthod for getting the ID of the task
+     * @return ID of the task
+     */
     public long getTaskId() {
         return taskId;
     }
 
+    /**
+     * Method for checking if the task is completed
+     * @return true if completed, false if incomplete
+     */
     public boolean isCompleted() {
         return isCompleted;
     }
 
+    /**
+     * Method for setting the completed field
+     * @param completed task completion status
+     */
     public void setCompleted(boolean completed) {
         isCompleted = completed;
     }
 
+    /**
+     * Mehtod for getting the title of the task
+     * @return title of the task
+     */
     public String getTitle() {
         return title;
     }
 
+    /**
+     * Method for setting the title of the task
+     * @param title title of the task
+     */
     public void setTitle(String title) {
         this.title = title;
     }
 
+    /**
+     * Method for getting the description of the task
+     * @return description of the task
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Method for setting the description of the task
+     * @param description description of the task
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
+    /**
+     * Method for getting the priority of the task
+     * @return priority of the task
+     */
     public int getPriority() {
         return priority;
     }
 
+    /**
+     * Method for setting the priority of the task
+     * @param priority priority of the task
+     */
     public void setPriority(int priority) {
         this.priority = priority;
     }
 
+    /**
+     * Method for getting the author of the task
+     * @return User object of the author of the task
+     */
     public User getCreatedBy() {
         return createdBy;
     }
 
+    /**
+     * Method for getting the deadline of the task
+     * @return deadline of the task
+     */
     public long getDeadlineMS() {
         return deadlineMS;
     }
 
+    /**
+     * Method for setting the deadline of the task
+     * @param deadlineMS deadiline of the task
+     */
     public void setDeadlineMS(long deadlineMS) {
         this.deadlineMS = deadlineMS;
     }
 
+    /**
+     * Mehtod for getting the creation time of the taks
+     * @return creation time of the task
+     */
     public long getDateCreatedMS() {
         return dateCreatedMS;
     }
 
+    /**
+     * Method for getting the master task of the task
+     * @return master task ID of the task
+     */
     public long getMasterTaskId() {
         return masterTaskId;
     }
 
+    /**
+     * Method for setting the mastet task of the task
+     * @param masterTaskId master task ID of the task
+     */
     public void setMasterTaskId(long masterTaskId) {
         this.masterTaskId = masterTaskId;
     }
 
+    /**
+     * Method for acquiring the list of the assignees
+     * @return list of the assignees of the task
+     */
     public List<User> getAssignedEmployees() {
         return assignedEmployees;
     }
 
+    /**
+     * Method for getting the List of the boards
+     * @return list of the boards where this task belongs
+     */
     public List<Long> getBoards() {
         return boards;
     }
 
+    /**
+     * Method for getting the order
+     * // TODO: to be removed
+     * @return order
+     */
     public static long getOrder() {
         return order;
     }
 
+    /**
+     * Method for setting the order
+     * // TODO: to be removed
+     * @param order
+     */
     public static void setOrder(long order) {
         Task.order = order;
     }
 
+    /**
+     * Date object
+     * // TODO: to be removed
+     * @return
+     */
     public static Date getCommonTime() {
         return commonTime;
     }
 
+    /**
+     * Date object
+     * // TODO: to be removed
+     * @param commonTime
+     */
     public static void setCommonTime(Date commonTime) {
         Task.commonTime = commonTime;
     }
 
+    /**
+     * // TODO
+     * @return
+     */
     public GitHub getGitHub() {
         return gitHub;
     }
 
+    /**
+     * Method for formatting the description of the task
+     * @param width width of the info box in characters
+     * @return description part of the info box
+     */
+    @NotNull
+    @Contract("_ -> new")
     private String displayDescription(int width){
         // Split the description into 43 character sections
         if(this.description == null)
@@ -275,6 +421,13 @@ public class Task {
         return new String(builder);
     }
 
+    /**
+     * Method for formatting the assignees part of the info box
+     * @param width width of the info box in characters
+     * @return assignees part of the info box
+     */
+    @NotNull
+    @Contract("_ -> new")
     private String displayAssignees(int width){
         // Split the description into 43 character sections
         StringBuilder builder = new StringBuilder(this.assignedEmployees.size() + 100);
@@ -305,6 +458,10 @@ public class Task {
         return new String(builder);
     }
 
+    /**
+     * Override of the toString(). Formats a beautiful info box form the task
+     * @return String of the info box. Print it!
+     */
     @Override
     public String toString() {
         return "_____________________________________________\n" + // 45 _
