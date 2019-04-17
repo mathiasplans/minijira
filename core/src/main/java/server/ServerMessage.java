@@ -1,13 +1,19 @@
 package server;
 
+import common.Task;
 import common.TaskContainer;
 import common.UserContainer;
 import data.*;
 import messages.JiraMessageHandler;
+import messages.MessageType;
+import messages.ProtocolConnection;
+
+import java.io.IOException;
 
 public class ServerMessage implements JiraMessageHandler {
     private final TaskContainer tasks;
     private final UserContainer users;
+    private ProtocolConnection connection;
 
     /**
      * Main constructor. Initializes task and user containers
@@ -17,6 +23,10 @@ public class ServerMessage implements JiraMessageHandler {
     public ServerMessage(TaskContainer tasks, UserContainer users) {
         this.tasks = tasks;
         this.users = users;
+    }
+
+    public void setConnection(ProtocolConnection connection){
+        this.connection = connection;
     }
 
     @Override
@@ -45,6 +55,14 @@ public class ServerMessage implements JiraMessageHandler {
 
     @Override
     public RawError getServerTaskList(Object unimplemented) {
+        for(Task task: tasks.getTasks()){
+            try{
+                connection.sendMessage(task.getRawTask(), MessageType.UPDATETASK);
+            }catch (IOException e){
+                System.out.println("Failed to send a message: " + e.getMessage());
+            }
+        }
+
         return null;
     }
 
@@ -71,6 +89,13 @@ public class ServerMessage implements JiraMessageHandler {
 
     @Override
     public RawError getProject(Long projectId) {
+        for(Task task: tasks.getTasks(projectId)){
+            try{
+                connection.sendMessage(task.getRawTask(), MessageType.UPDATETASK);
+            }catch (IOException e){
+                System.out.println("Failed to send a message: " + e.getMessage());
+            }
+        }
         return null;
     }
 

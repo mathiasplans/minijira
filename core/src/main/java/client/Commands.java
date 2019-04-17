@@ -3,7 +3,6 @@ package client;
 import common.Task;
 import common.TaskContainer;
 import common.UserContainer;
-import messages.JiraMessageHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -36,7 +35,7 @@ class Commands {
             System.out.println("Task Set: Not enough arguments");
             return;
         }
-        Task subject = taskContainer.getById(Long.parseLong(tokens[level + 1]));
+        Task subject = taskContainer.getTask(Long.parseLong(tokens[level + 1]));
         switch (tokens[level]){
             case "title":
                 // task set title <id> <title>
@@ -80,7 +79,7 @@ class Commands {
             return;
         }
 
-        Task subject = taskContainer.getById(Long.parseLong(tokens[level + 1]));
+        Task subject = taskContainer.getTask(Long.parseLong(tokens[level + 1]));
         switch (tokens[level]){
             case "board":
                 // task add board <id> <board id>
@@ -89,7 +88,7 @@ class Commands {
 
             case "assignee":
                 // task add assignee <id> <user id>
-                subject.addAssignee(userContainer.getById(Long.parseLong(tokens[level + 2])));
+                subject.addAssignee(userContainer.getUser(Long.parseLong(tokens[level + 2])));
                 break;
 
             default:
@@ -115,14 +114,14 @@ class Commands {
                 taskContainer.newTask(tokens[level + 1]);
                 break;
             case "info":
-                Task infoTask = taskContainer.getById(Long.parseLong(tokens[level + 1]));
+                Task infoTask = taskContainer.getTask(Long.parseLong(tokens[level + 1]));
                 if(infoTask != null)
                     System.out.println(infoTask.toString());
                 else
                     System.out.println("Task with this ID does not exist");
                 break;
             case "complete":
-                Task completeTask = taskContainer.getById(Long.parseLong(tokens[level + 1]));
+                Task completeTask = taskContainer.getTask(Long.parseLong(tokens[level + 1]));
                 if(completeTask != null)
                     completeTask.complete();
                 else

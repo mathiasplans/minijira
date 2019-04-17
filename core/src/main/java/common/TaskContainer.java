@@ -12,7 +12,9 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class for containing and handling the tasks
@@ -25,6 +27,7 @@ public class TaskContainer {
     // Task creation
     private long order = 0;
     private final GitHub gitHub = null; // TODO
+
     /**
      * Default constructor. Initializes the list of the tasks
      */
@@ -63,9 +66,6 @@ public class TaskContainer {
      * @throws IOException If file IO fails
      */
     private void importTasks(String path) throws IOException {
-        // Set the save path
-        inpath = path;
-
         /* Fill the list */
         // File/Directory
         File dile = new File(path);
@@ -105,6 +105,9 @@ public class TaskContainer {
 
         // Set new order. This ensures that old Task IDs don't get overwritten
         order = biggestTaskId + 1;
+
+        // Set the save path
+        inpath = path;
     }
 
     /**
@@ -170,7 +173,7 @@ public class TaskContainer {
      */
     public void addTask(Task task) {
         // Check if task already exists!
-        Task testTask = getById(task.getTaskId());
+        Task testTask = getTask(task.getTaskId());
         if(testTask != null)
             throw new IllegalArgumentException("Task with given ID already exists");
         tasks.add(task);
@@ -190,7 +193,7 @@ public class TaskContainer {
      * @param id ID of the task to be removed
      */
     public void removeTask(long id){
-        removeTask(getById(id));
+        removeTask(getTask(id));
     }
 
     /**
@@ -237,8 +240,9 @@ public class TaskContainer {
      * @return the created task
      */
     public Task updateTask(RawTask task){
-        // Remove the previous version from the list
-        tasks.remove(getById(task.taskId));
+        // Remove the previous version from the list if it exists
+        if(tasks.indexOf(getTask(task.taskId)) != -1)
+            tasks.remove(getTask(task.taskId));
 
         // Replace it with the new version
         return newTask(task);
@@ -278,7 +282,7 @@ public class TaskContainer {
      * @param id search key
      * @return the task with given ID. Is null when task with given ID does not exist
      */
-    public Task getById(long id){
+    public Task getTask(long id){
         for(Task task: tasks){
             if(task.getTaskId() == id){
                 return task;

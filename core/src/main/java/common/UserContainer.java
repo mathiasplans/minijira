@@ -1,7 +1,6 @@
 package common;
 
 import com.google.gson.Gson;
-import data.RawTask;
 import data.RawUser;
 
 import java.io.File;
@@ -174,7 +173,7 @@ public class UserContainer {
      */
     public void addUser(User newUser) {
         // Check if user already exists!
-        User testUser = getById(newUser.getId());
+        User testUser = getUser(newUser.getId());
         if(testUser != null)
             throw new IllegalArgumentException("User with given ID already exists");
 
@@ -217,11 +216,11 @@ public class UserContainer {
     }
 
     /**
-     * Aquire the user with specific ID
+     * Acquire the user with specific ID
      * @param id search key
      * @return the user with given ID. Is null if not found
      */
-    public User getById(long id){
+    public User getUser(long id){
         for(User user: users){
             if(user.getId() == id)
                 return user;
@@ -231,25 +230,16 @@ public class UserContainer {
     }
 
     /**
-     * Aquire the user with specific name
+     * Acquire the user with specific name
      * @param name search key
      * @return the user with given name. Is null if not found
      */
-    public User getByName(String name){
+    public User getUser(String name){
         for(User user: users){
             if(user.getName().equals(name))
                 return user;
         }
 
         return null;
-    }
-
-    /**
-     * Returns the name of the user with specific ID
-     * @param id search key
-     * @return name of the user with given ID
-     */
-    public String getName(long id){
-        return getById(id).getName();
     }
 }

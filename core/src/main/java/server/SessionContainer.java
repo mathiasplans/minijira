@@ -37,7 +37,7 @@ public class SessionContainer {
         Session out = new Session(
                 SecurityHelper.generateSessionKey(),
                 idCounter++,
-                users.getByName(login.username).getId(),
+                users.getUser(login.username).getId(),
                 connection.getInetAddress().getHostAddress(),
                 connection.getPort(),
                 connection.getLocalAddress().getHostAddress(),

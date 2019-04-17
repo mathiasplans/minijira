@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public class ClientTest {
     public static void main(String[] args) throws IOException {
-        Client client = new Client();
+//        Client client = new Client();
 
         // Guide
         System.out.println("Praegu saab klienis ainult lokaalsete taskidega interakteeruda. Proovida commande:\n" +
@@ -13,6 +13,6 @@ public class ClientTest {
                 "task complete <id>\n" +
                 "save <-- salvestab taskid kausta");
 
-        client.clientDaemon();
+//        client.clientDaemon();
     }
 }

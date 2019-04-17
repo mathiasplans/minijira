@@ -1,6 +1,7 @@
 package client;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.file.Path;
 import java.util.Scanner;
@@ -13,33 +14,70 @@ import messages.*;
  * Class for client part of the minijira
  */
 public class Client {
-    /**
-     * Daemon of the client
-     * @throws IOException If IO fails
-     */
-    public void clientDaemon() throws IOException {
-        try (Socket socket = new Socket("localhost", 1337);
-             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-             DataInputStream in = new DataInputStream(socket.getInputStream())) {
+    private final InetAddress address;
+    private final int port;
 
-            // NOTE: only client side operations are wotking atm. Interaction with server is meaningless
-            System.out.println("Connected to localhost:1337");
+    public Client(InetAddress address, int port) {
+        this.address = address;
+        this.port = port;
+    }
 
-            // Message object
-            ClientMessage handler = new ClientMessage();
-            ProtocolConnection messenger = new ProtocolConnection(null, out, in, handler);
+    public void mainLoop(Socket socket, DataInputStream in, DataOutputStream out) throws IOException {
+        // Report success
+        if(address == null)
+            System.out.println("Connected to localhost:" + port);
+        else
+            System.out.println("Connected to " + address.getHostAddress() + ":" + port);
 
-            TaskContainer tasks = new TaskContainer(Path.of("src", "test", "resources", "src/test/resources/tasks"));
-            UserContainer users = new UserContainer();
-            Commands commands = new Commands(tasks, users);
+        /*
+         * UserContainer and TaskContainer. This is the data the server serves.
+         * Both containers hold users and tasks respectively.
+         */
+        UserContainer users = new UserContainer(Path.of("core", "src", "main", "java", "client", "users"));
+        TaskContainer tasks = new TaskContainer(Path.of("core", "src", "main", "java", "client", "tasks"));
 
-            Scanner scin = new Scanner(System.in);
-            String lastCommand;
+        // Message object
+        /*
+         * ServerMessage object. Implementation of handling of incoming messages from a client
+         */
+        ClientMessage handler = new ClientMessage(tasks, users);
 
-            while (true){
-                if(scin.hasNextLine()){
-                    commands.handle(scin.nextLine());
-                }
+        /*
+         * ProtocolConnection object. Handles the messages.
+         * Server has to call readMessage when message is available
+         */
+        ProtocolConnection messenger = new ProtocolConnection(null, out, in, handler);
+
+        // Command handler object
+        Commands commands = new Commands(tasks, users);
+
+        // Command line input
+        Scanner scin = new Scanner(System.in);
+
+        while (true){
+            // Handle user input
+            if(scin.hasNextLine()){
+                commands.handle(scin.nextLine());
+            }
+        }
+    }
+
+    public void run() throws IOException {
+        if(address == null) {
+            try (Socket socket = new Socket("localhost", port);
+                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+                 DataInputStream in = new DataInputStream(socket.getInputStream())) {
+
+                // Main loop of the client
+                mainLoop(socket, in, out);
+            }
+        }else{
+            try (Socket socket = new Socket(address, port);
+                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+                 DataInputStream in = new DataInputStream(socket.getInputStream())) {
+
+                // Main loop of the client
+                mainLoop(socket, in, out);
             }
         }
     }

@@ -1,5 +1,7 @@
 package client;
 
+import common.TaskContainer;
+import common.UserContainer;
 import data.*;
 import messages.JiraMessageHandler;
 
@@ -7,18 +9,29 @@ import messages.JiraMessageHandler;
  * Communication handler. What the client does when it receives a type of a message
  */
 public class ClientMessage implements JiraMessageHandler {
+    private final TaskContainer tasks;
+    private final UserContainer users;
+
+    public ClientMessage(TaskContainer tasks, UserContainer users) {
+        this.tasks = tasks;
+        this.users = users;
+    }
+
     @Override
     public RawError createTask(RawTask newTask) {
+        tasks.newTask(newTask);
         return null;
     }
 
     @Override
     public RawError removeTask(Long taskId) {
+        tasks.removeTask(taskId);
         return null;
     }
 
     @Override
     public RawError updateTask(RawTask updatedTask) {
+        tasks.updateTask(updatedTask);
         return null;
     }
 
@@ -54,6 +67,9 @@ public class ClientMessage implements JiraMessageHandler {
 
     @Override
     public RawError setProject(RawProject rawProject) {
+        for(RawTask task: rawProject.tasks){
+            tasks.updateTask(task);
+        }
         return null;
     }
 }
