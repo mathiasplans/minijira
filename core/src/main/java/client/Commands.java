@@ -3,6 +3,8 @@ package client;
 import common.Task;
 import common.TaskContainer;
 import common.UserContainer;
+import messages.MessageType;
+import messages.ProtocolConnection;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -12,8 +14,10 @@ import java.util.List;
  * This class will take user input (as a string) and then handles it
  */
 class Commands {
-    final private TaskContainer taskContainer;
-    final private UserContainer userContainer;
+    private final TaskContainer taskContainer;
+    private final UserContainer userContainer;
+    private final ProtocolConnection connection;
+
     private boolean running = true;
 
     /**
@@ -21,9 +25,10 @@ class Commands {
      * @param taskContainer TaskContainer object, is filled with tasks!
      * @param userContainer UserContainer object, is filled with users!
      */
-    Commands(TaskContainer taskContainer, UserContainer userContainer) {
+    Commands(TaskContainer taskContainer, UserContainer userContainer, ProtocolConnection connection) {
         this.taskContainer = taskContainer;
         this.userContainer = userContainer;
+        this.connection = connection;
     }
 
     /**
@@ -38,13 +43,25 @@ class Commands {
      * Command parser for 'task set ___'
      * @param tokens parsed command split up
      * @param level level of the parse, which word is handled from the tokens
+     * @exception IOException If communication with server fails
      */
-    private void taskSet(@NotNull String[] tokens, int level) {
+    private void taskSet(@NotNull String[] tokens, int level) throws IOException {
+        // Check whether there are enough arguments
         if(tokens.length < level + 3) {
             System.out.println("Task Set: Not enough arguments");
             return;
         }
+
+        // Get the task
         Task subject = taskContainer.getTask(Long.parseLong(tokens[level + 1]));
+
+        // Check whether the task exists
+        if(subject == null){
+            System.out.println("Task with given ID does not exist");
+            return;
+        }
+
+        // Handle next token
         switch (tokens[level]){
             case "title":
                 // task set title <id> <title>
@@ -74,21 +91,36 @@ class Commands {
 
             default:
                 System.out.println("Task Set: Command does not exist");
+                return;
         }
+
+        // Update the subject in server
+        connection.sendMessage(subject.getRawTask(), MessageType.UPDATETASK);
     }
 
     /**
      * Command parser for 'task add ___'
      * @param tokens parsed command split up
      * @param level level of the parse, which word is handled from the tokens
+     * @exception IOException If communication with server fails
      */
-    private void taskAdd(@NotNull String[] tokens, int level) {
+    private void taskAdd(@NotNull String[] tokens, int level) throws IOException {
+        // Check whether there are enough arguments
         if(tokens.length < level + 3){
             System.out.println("Task Add: Not enough arguments");
             return;
         }
 
+        // Get the task
         Task subject = taskContainer.getTask(Long.parseLong(tokens[level + 1]));
+
+        // Check whether the task exists
+        if(subject == null){
+            System.out.println("Task with given ID does not exist");
+            return;
+        }
+
+        // Handle the next token
         switch (tokens[level]){
             case "board":
                 // task add board <id> <board id>
@@ -102,7 +134,11 @@ class Commands {
 
             default:
                 System.out.println("Task Add: Command does not exist");
+                return;
         }
+
+        // Update the task in server
+        connection.sendMessage(subject.getRawTask(), MessageType.UPDATETASK);
     }
 
     /**
@@ -110,7 +146,7 @@ class Commands {
      * @param tokens parsed command split up
      * @param level level of the parse, which word is handled from the tokens
      */
-    private void taskCommands(@NotNull String[] tokens, int level){
+    private void taskCommands(@NotNull String[] tokens, int level) throws IOException {
         if(tokens.length < level + 2){
             System.out.println("Task: Not enough arguments");
             return;
@@ -131,13 +167,22 @@ class Commands {
                 break;
             case "complete":
                 Task completeTask = taskContainer.getTask(Long.parseLong(tokens[level + 1]));
-                if(completeTask != null)
+                if(completeTask != null) {
+                    // Set completion status
                     completeTask.complete();
+
+                    // Update the task in server
+                    connection.sendMessage(completeTask.getRawTask(), MessageType.UPDATETASK);
+                }
                 else
                     System.out.println("Task with this ID does not exist");
                 break;
             case "set":
                 taskSet(tokens, level + 1);
+                break;
+
+            case "add":
+                taskAdd(tokens, level + 1);
                 break;
             default:
                 System.out.println("Task: Command does not exist");

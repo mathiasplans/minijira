@@ -52,7 +52,7 @@ public class Client {
         ProtocolConnection messenger = new ProtocolConnection(null, out, in, handler);
 
         // Command handler object
-        Commands commands = new Commands(tasks, users);
+        Commands commands = new Commands(tasks, users, messenger);
 
         // Command line input
         Scanner scin = new Scanner(System.in);
@@ -75,6 +75,9 @@ public class Client {
         users.saveUsers();
         tasks.saveTasks();
         boards.saveBoards();
+
+        // Close the socket
+        socket.close();
     }
 
     public void run() throws IOException {
