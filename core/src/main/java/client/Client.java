@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.nio.file.Path;
 import java.util.Scanner;
 
+import common.Boards;
 import common.TaskContainer;
 import common.UserContainer;
 import messages.*;
@@ -35,12 +36,14 @@ public class Client {
          */
         UserContainer users = new UserContainer(Path.of("core", "src", "main", "java", "client", "users"));
         TaskContainer tasks = new TaskContainer(Path.of("core", "src", "main", "java", "client", "tasks"));
+        Boards boards = new Boards(tasks, Path.of("core", "src", "main", "java", "client", "boards"));
+
 
         // Message object
         /*
          * ServerMessage object. Implementation of handling of incoming messages from a client
          */
-        ClientMessage handler = new ClientMessage(tasks, users);
+        ClientMessage handler = new ClientMessage(tasks, users, boards);
 
         /*
          * ProtocolConnection object. Handles the messages.

@@ -6,6 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Path;
 
+import common.Boards;
 import common.TaskContainer;
 import common.UserContainer;
 import messages.*;
@@ -43,6 +44,7 @@ public class Server implements Runnable {
              */
             UserContainer users = new UserContainer(Path.of("core", "src", "main", "java", "server", "users"));
             TaskContainer tasks = new TaskContainer(Path.of("core", "src", "main", "java", "server", "tasks"));
+            Boards boards = new Boards(tasks, Path.of("core", "src", "main", "java", "server", "boards"));
 
             // Accept a connection from a client
             try {
@@ -66,7 +68,7 @@ public class Server implements Runnable {
                         /*
                          * ServerMessage object. Implementation of handling of incoming messages from a client
                          */
-                        ServerMessage handler = new ServerMessage(tasks, users);
+                        ServerMessage handler = new ServerMessage(tasks, users, boards);
 
                         /*
                          * ProtocolConnection object. Handles the messages.

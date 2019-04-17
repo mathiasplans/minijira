@@ -1,5 +1,6 @@
 package client;
 
+import common.Boards;
 import common.TaskContainer;
 import common.UserContainer;
 import data.*;
@@ -11,10 +12,12 @@ import messages.JiraMessageHandler;
 public class ClientMessage implements JiraMessageHandler {
     private final TaskContainer tasks;
     private final UserContainer users;
+    private final Boards boards;
 
-    public ClientMessage(TaskContainer tasks, UserContainer users) {
+    public ClientMessage(TaskContainer tasks, UserContainer users, Boards boards) {
         this.tasks = tasks;
         this.users = users;
+        this.boards = boards;
     }
 
     @Override
@@ -57,6 +60,7 @@ public class ClientMessage implements JiraMessageHandler {
 
     @Override
     public RawError setProjectList(RawProjectNameList projectNames) {
+        boards.registerBoard(projectNames);
         return null;
     }
 
@@ -67,9 +71,7 @@ public class ClientMessage implements JiraMessageHandler {
 
     @Override
     public RawError setProject(RawProject rawProject) {
-        for(RawTask task: rawProject.tasks){
-            tasks.updateTask(task);
-        }
+        boards.registerBoard(rawProject);
         return null;
     }
 }

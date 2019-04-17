@@ -1,5 +1,6 @@
 package server;
 
+import common.Boards;
 import common.Task;
 import common.TaskContainer;
 import common.UserContainer;
@@ -13,6 +14,7 @@ import java.io.IOException;
 public class ServerMessage implements JiraMessageHandler {
     private final TaskContainer tasks;
     private final UserContainer users;
+    private final Boards boards;
     private ProtocolConnection connection;
 
     /**
@@ -20,9 +22,10 @@ public class ServerMessage implements JiraMessageHandler {
      * @param tasks
      * @param users
      */
-    public ServerMessage(TaskContainer tasks, UserContainer users) {
+    public ServerMessage(TaskContainer tasks, UserContainer users, Boards boards) {
         this.tasks = tasks;
         this.users = users;
+        this.boards = boards;
     }
 
     public void setConnection(ProtocolConnection connection){
@@ -59,7 +62,7 @@ public class ServerMessage implements JiraMessageHandler {
             try{
                 connection.sendMessage(task.getRawTask(), MessageType.UPDATETASK);
             }catch (IOException e){
-                System.out.println("Failed to send a message: " + e.getMessage());
+                System.out.println("Failed to send message: " + e.getMessage());
             }
         }
 
@@ -79,6 +82,11 @@ public class ServerMessage implements JiraMessageHandler {
 
     @Override
     public RawError getProjectList() {
+        try {
+            connection.sendMessage(boards.getRawProjectNameList(), MessageType.SETPROJECTLIST);
+        }catch (IOException e){
+            System.out.println("Failed to send message: " + e.getMessage());
+        }
         return null;
     }
 
@@ -91,9 +99,9 @@ public class ServerMessage implements JiraMessageHandler {
     public RawError getProject(Long projectId) {
         for(Task task: tasks.getTasks(projectId)){
             try{
-                connection.sendMessage(task.getRawTask(), MessageType.UPDATETASK);
+                connection.sendMessage(boards.getRawProject(projectId), MessageType.SETPROJECT);
             }catch (IOException e){
-                System.out.println("Failed to send a message: " + e.getMessage());
+                System.out.println("Failed to send message: " + e.getMessage());
             }
         }
         return null;
