@@ -57,12 +57,24 @@ public class Client {
         // Command line input
         Scanner scin = new Scanner(System.in);
 
-        while (true){
+        // Main loop
+        while (commands.isRunning()) {
             // Handle user input
             if(scin.hasNextLine()){
                 commands.handle(scin.nextLine());
             }
+
+            // Read server responses
+            if(in.available() != 0){
+                // Read a message
+                MessageType type = messenger.readMessage();
+            }
         }
+
+        // Save data
+        users.saveUsers();
+        tasks.saveTasks();
+        boards.saveBoards();
     }
 
     public void run() throws IOException {

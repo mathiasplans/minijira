@@ -14,15 +14,24 @@ import java.util.List;
 class Commands {
     final private TaskContainer taskContainer;
     final private UserContainer userContainer;
+    private boolean running = true;
 
     /**
      * Constructor, initializes task and user containers with given values
      * @param taskContainer TaskContainer object, is filled with tasks!
      * @param userContainer UserContainer object, is filled with users!
      */
-    public Commands(TaskContainer taskContainer, UserContainer userContainer) {
+    Commands(TaskContainer taskContainer, UserContainer userContainer) {
         this.taskContainer = taskContainer;
         this.userContainer = userContainer;
+    }
+
+    /**
+     * Simple method for checking if user hasn't fired a quit signal
+     * @return true if program needs to run still, false if program has to end
+     */
+    boolean isRunning(){
+        return running;
     }
 
     /**
@@ -159,7 +168,7 @@ class Commands {
      * @throws IllegalArgumentException If given command is empty
      * @throws IOException If IO fails
      */
-    public void handle(@NotNull String command) throws IOException {
+    void handle(@NotNull String command) throws IOException {
         /*
          * Command structure
          * [area] [operation] [argument(s)]
@@ -174,8 +183,7 @@ class Commands {
 
         switch (tokens[0]){
             case "quit":
-                // TODO: "Do you want to save?" dialog
-                System.exit(0);
+                running = false;
                 break;
             case "man":
                 printManual();
