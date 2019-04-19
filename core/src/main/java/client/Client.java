@@ -65,13 +65,6 @@ public class Client {
             if(scin.hasNextLine()){
                 commands.handle(scin.nextLine());
             }
-
-            // Read a message
-            try {
-                MessageType type = messenger.readMessage();
-            }catch (IOException e){
-                // ignore
-            }
         }
 
         // Save data
