@@ -10,6 +10,8 @@ import common.Boards;
 import common.TaskContainer;
 import common.UserContainer;
 import messages.*;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 public class Server implements Runnable {
     private final InetAddress address;
@@ -23,6 +25,48 @@ public class Server implements Runnable {
     public Server(InetAddress address, int port) {
         this.address = address;
         this.port = port;
+    }
+
+    private void clientHandler(@NotNull Socket socket, UserContainer users, TaskContainer tasks, Boards boards){
+        // IO objects
+        try(
+                socket;
+                DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+                DataInputStream in = new DataInputStream(socket.getInputStream())
+        ){
+            // Report success
+            System.out.println("client connected, waiting for data");
+
+            // Message object
+            /*
+             * ServerMessage object. Implementation of handling of incoming messages from a client
+             */
+            ServerMessage handler = new ServerMessage(tasks, users, boards);
+
+            /*
+             * ProtocolConnection object. Handles the messages.
+             * Server has to call readMessage when message is available
+             */
+            ProtocolConnection messenger = new ProtocolConnection(null, out, in, handler);
+
+            // Set the messenger as handler connection, enables handler to send response messages
+            handler.setConnection(messenger);
+
+            /* Body of the thread */
+
+            while (socket.isConnected()){
+                if(in.available() != 0){
+                    // Read a message
+                    MessageType type = messenger.readMessage();
+                }
+            }
+
+            /* End of body */
+
+        } catch (IOException e){
+            System.out.println("Thread failed: " + Thread.currentThread().getId());
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -55,45 +99,7 @@ public class Server implements Runnable {
 
                 // Create a thread for the client
                 Thread thread = new Thread(() -> {
-                    // IO objects
-                    try(
-                            socket;
-                            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-                            DataInputStream in = new DataInputStream(socket.getInputStream())
-                    ){
-                        // Report success
-                        System.out.println("client connected, waiting for data");
-
-                        // Message object
-                        /*
-                         * ServerMessage object. Implementation of handling of incoming messages from a client
-                         */
-                        ServerMessage handler = new ServerMessage(tasks, users, boards);
-
-                        /*
-                         * ProtocolConnection object. Handles the messages.
-                         * Server has to call readMessage when message is available
-                         */
-                        ProtocolConnection messenger = new ProtocolConnection(null, out, in, handler);
-
-                        // Set the messenger as handler connection, enables handler to send response messages
-                        handler.setConnection(messenger);
-
-                        /* Body of the thread */
-
-                        while (true){
-                            if(in.available() != 0){
-                                // Read a message
-                                MessageType type = messenger.readMessage();
-                            }
-                        }
-
-                        /* End of body */
-
-                    } catch (IOException e){
-                        System.out.println("Thread failed: " + Thread.currentThread().getId());
-                        throw new RuntimeException(e);
-                    }
+                    clientHandler(socket, users, tasks, boards);
                 });
 
                 // Start the thread
@@ -105,27 +111,32 @@ public class Server implements Runnable {
         }
     }
 
+    /**
+     * Method for producing ServerSocket objects. If Internet Address is not
+     * specified, the ServerSocket is bound to localhost.
+     * @return new ServerSocket object
+     * @throws IOException If socket IO fails
+     */
+    @NotNull
+    @Contract(" -> new")
+    private ServerSocket getSS() throws IOException {
+        if(address == null)
+            return new ServerSocket(port);
+        else
+            return new ServerSocket(port, 0, address);
+    }
+
     @Override
     public void run() {
-        if(address == null) {
-            // Establish a server connection
-            try (ServerSocket ss = new ServerSocket(port)) {
+        try(ServerSocket ss = getSS()){
+            if(address != null)
+                System.out.println("Server established on " + address.getHostAddress() + ":" + port);
+            else
                 System.out.println("Server established on localhost:" + port);
 
-                mainLoop(ss);
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }else{
-            try (ServerSocket ss = new ServerSocket(port, 0, address)) {
-                System.out.println("Server established on " + address.getHostAddress() + ":" + port);
-
-                mainLoop(ss);
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            mainLoop(ss);
+        }catch (IOException e){
+            throw new RuntimeException(e);
         }
     }
 }

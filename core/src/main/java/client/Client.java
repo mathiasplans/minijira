@@ -10,6 +10,8 @@ import common.Boards;
 import common.TaskContainer;
 import common.UserContainer;
 import messages.*;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Class for client part of the minijira
@@ -23,7 +25,7 @@ public class Client {
         this.port = port;
     }
 
-    public void mainLoop(Socket socket, DataInputStream in, DataOutputStream out) throws IOException {
+    private void mainLoop(Socket socket, DataInputStream in, DataOutputStream out) throws IOException {
         // Report success
         if(address == null)
             System.out.println("Connected to localhost:" + port);
@@ -64,10 +66,11 @@ public class Client {
                 commands.handle(scin.nextLine());
             }
 
-            // Read server responses
-            if(in.available() != 0){
-                // Read a message
+            // Read a message
+            try {
                 MessageType type = messenger.readMessage();
+            }catch (IOException e){
+                // ignore
             }
         }
 
@@ -75,28 +78,29 @@ public class Client {
         users.saveUsers();
         tasks.saveTasks();
         boards.saveBoards();
+    }
 
-        // Close the socket
-        socket.close();
+    /**
+     * Method for producing a Socket object. If address is not given, bind it
+     * to localhost
+     * @return
+     * @throws IOException
+     */
+    @NotNull
+    @Contract(" -> new")
+    private Socket getSocket() throws IOException {
+        if(address == null)
+            return new Socket("localhost", port);
+        else
+            return new Socket(address, port);
     }
 
     public void run() throws IOException {
-        if(address == null) {
-            try (Socket socket = new Socket("localhost", port);
-                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-                 DataInputStream in = new DataInputStream(socket.getInputStream())) {
+        try(Socket socket = getSocket();
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream())){
 
-                // Main loop of the client
-                mainLoop(socket, in, out);
-            }
-        }else{
-            try (Socket socket = new Socket(address, port);
-                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-                 DataInputStream in = new DataInputStream(socket.getInputStream())) {
-
-                // Main loop of the client
-                mainLoop(socket, in, out);
-            }
+            mainLoop(socket, in, out);
         }
     }
 }

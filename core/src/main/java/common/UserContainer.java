@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +20,7 @@ import java.util.List;
 public class UserContainer {
     private final List<User> users;
     private static final Gson gson = new Gson();
-    private String inpath;
+    private Path inpath;
     private long order = 0;
     private final ContainerHelper<User> container;
 
@@ -62,7 +63,7 @@ public class UserContainer {
     public UserContainer(@NotNull Path path) throws IOException {
         users = new ArrayList<>();
         container = new ContainerHelper<>(users);
-        importUsers(path.toString());
+        importUsers(path);
     }
 
     /**
@@ -73,6 +74,17 @@ public class UserContainer {
      * @throws IOException If file IO fails
      */
     private void importUsers(String path) throws IOException {
+        importUsers(Paths.get(path));
+    }
+
+    /**
+     * Imports thasks from given paths. The path
+     * has to point to a directory/file. The tasks have to be in JSON
+     * format.
+     * @param path Path to the directory/file where the tasks are stored
+     * @throws IOException If file IO fails
+     */
+    private void importUsers(Path path) throws IOException {
         /* Fill the list */
         container.importItems(path, json -> new User(gson.fromJson(json, RawUser.class)));
 
@@ -96,7 +108,7 @@ public class UserContainer {
      * @param path path to the save directory
      * @throws IOException If file IO fails
      */
-    public void saveUsers(String path) throws IOException {
+    public void saveUsers(Path path) throws IOException {
         container.exportItems(path, user -> gson.toJson(user, RawUser.class));
     }
 

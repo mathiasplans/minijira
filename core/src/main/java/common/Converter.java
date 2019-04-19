@@ -1,6 +1,6 @@
 package common;
 
 @FunctionalInterface
-public interface Callback<InputType, OutputType> {
+public interface Converter<InputType, OutputType> {
     OutputType call(InputType in);
 }

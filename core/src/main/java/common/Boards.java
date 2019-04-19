@@ -160,8 +160,8 @@ public class Boards {
     }
 
     /**
-     * Remove the board from existance
-     * @param id
+     * Remove the board from existence
+     * @param id id of the board to be removed
      */
     public void removeBoard(long id){
         // Remove from map
@@ -169,15 +169,16 @@ public class Boards {
 
         // Remove from tasks themselves
         List<Task> taskList = tasks.getTasks(id);
-        if(taskList != null)
-            for(Task task: taskList)
+        if(taskList != null) {
+            for (Task task : taskList)
                 task.removeBoard(id);
+        }
     }
 
     /**
      * Mehtid for getting the name of a board
-     * @param id ID of the baord which' name is needed
-     * @return name of the baord which' ID was given
+     * @param id ID of the board which' name is needed
+     * @return name of the board which' ID was given
      */
     public String getBoardName(long id){
         return boardNames.get(id);
@@ -203,7 +204,6 @@ public class Boards {
     /**
      * Method for constructiong RawProject object from this class
      * @param id ID of the project which will be converted to RawProject
-     * @return RawProject object
      * @return RawProject object
      */
     public RawProject getRawProject(long id){
