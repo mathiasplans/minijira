@@ -6,7 +6,7 @@ import messages.ProtocolConnection;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.time.Duration;
+import java.util.Set;
 
 public class Sync {
     private final ProtocolConnection connection;
@@ -17,25 +17,68 @@ public class Sync {
         this.in = in;
     }
 
-
-    // TODO: handle errors also!
-
-    public void updateTask(Task task) throws IOException {
-        connection.sendMessage(task.getRawTask(), MessageType.UPDATETASK);
+    private MessageType waitForResponse() throws IOException {
+        return connection.readMessage();
     }
 
+    /**
+     * Update task request. Should be responded to with RESPONSE
+     * UPDATETASK -> RESPONSE
+     * @param task
+     * @throws IOException
+     */
+    public void updateTask(Task task) throws IOException {
+        // Send the message
+        connection.sendMessage(task.getRawTask(), MessageType.UPDATETASK);
+
+        // Wait for RESPONSE type message
+        if(waitForResponse() != MessageType.RESPONSE){
+            // Handle Error
+        }
+    }
+
+    /**
+     * Task creation request. Should be responded to with UPDATETASK (Gets ID from server)
+     * CREATETASK -> UPDATETASK
+     * @param task
+     * @throws IOException
+     */
     public void createTask(Task task) throws IOException {
         // Send the message
         connection.sendMessage(task.getRawTask(), MessageType.CREATETASK);
+
+        // Wait for UPDATETASK type message
+        if(waitForResponse() != MessageType.UPDATETASK){
+            // Handle error
+        }
     }
 
-    public void getTasks() throws IOException {
+    /**
+     * Gets all the tasks in the board. Should be responded to with SETPROJECT
+     * GETPROJECT -> SETPROJECT
+     * @param id
+     * @throws IOException
+     */
+    public void getBoardTasks(Long id) throws IOException {
         // Send the message
-        connection.sendMessage(null, MessageType.GETSERVERTASKLIST);
+        connection.sendMessage(id, MessageType.GETPROJECT);
 
-        // Receive the tasks
-        while (true){
-//            if(in.available())
+        // Wait for response and handle it
+        if(waitForResponse() != MessageType.SETPROJECT){
+            // Handle error
+        }
+    }
+
+    /**
+     * Gets the tasks of specified boards (given as the argument).
+     * @param boards
+     * @throws IOException
+     */
+    public void getTasks(Set<Long> boards) throws IOException {
+        // For every board, send the query
+        // TODO: this is costly, tasks can be in multiple boards
+        for(Long boardID: boards){
+            getBoardTasks(boardID);
         }
     }
 }
