@@ -2,6 +2,7 @@ package common;
 
 import com.google.gson.Gson;
 import data.RawUser;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,12 +21,14 @@ public class UserContainer {
     private static final Gson gson = new Gson();
     private String inpath;
     private long order = 0;
+    private final ContainerHelper<User> container;
 
     /**
      * Default constructor. Initializes the array of users.
      */
     public UserContainer(){
         users = new ArrayList<>();
+        container = new ContainerHelper<>(users);
     }
 
     /**
@@ -35,6 +38,7 @@ public class UserContainer {
      */
     public UserContainer(List<User> users){
         this.users = users;
+        container = new ContainerHelper<>(users);
     }
 
     /**
@@ -45,6 +49,7 @@ public class UserContainer {
      */
     public UserContainer(String path) throws IOException {
         users = new ArrayList<>();
+        container = new ContainerHelper<>(users);
         importUsers(path);
     }
 
@@ -54,8 +59,9 @@ public class UserContainer {
      * @param path path to the directory/file where users are stored
      * @throws IOException If file IO fails
      */
-    public UserContainer(Path path) throws IOException {
+    public UserContainer(@NotNull Path path) throws IOException {
         users = new ArrayList<>();
+        container = new ContainerHelper<>(users);
         importUsers(path.toString());
     }
 
@@ -67,37 +73,8 @@ public class UserContainer {
      * @throws IOException If file IO fails
      */
     private void importUsers(String path) throws IOException {
-        // Set the save path
-        inpath = path;
-
         /* Fill the list */
-        // File/Directory
-        File dile = new File(path);
-
-        // Check if file exists
-        if(!dile.exists())
-            throw new IllegalArgumentException("Given path does not point to neither file nor directory");
-
-        // If the File object points at directory
-        if (dile.isDirectory()){
-            File[] files = dile.listFiles();
-
-            if (files != null) {
-                for (File file : files) {
-                    newUser(gson.fromJson(Files.readString(file.toPath()), RawUser.class));
-                }
-            }
-
-        }
-
-        // If the File object points at file
-        else if(dile.isFile()){
-            List<String> lines = Files.readAllLines(dile.toPath(), StandardCharsets.UTF_8);
-            for(String line: lines){
-                if(!"".equals(line))
-                    newUser(gson.fromJson(line, RawUser.class));
-            }
-        }
+        container.importItems(path, json -> new User(gson.fromJson(json, RawUser.class)));
 
         /* Determine the order */
         // Get the biggest ID
@@ -109,6 +86,9 @@ public class UserContainer {
 
         // Set new order. This ensures that old Task IDs don't get overwritten
         order = biggestUserId + 1;
+
+        // Set the save path
+        inpath = path;
     }
 
     /**
@@ -117,37 +97,7 @@ public class UserContainer {
      * @throws IOException If file IO fails
      */
     public void saveUsers(String path) throws IOException {
-        File dile = new File(path);
-
-        // Check if file exists
-        if(!dile.exists())
-            throw new IllegalArgumentException("Given path does not point to neither file nor directory");
-
-        // If the File object points at directory
-        if(dile.isDirectory()){
-            for (User user : users) {
-                File newFile = new File(path, String.valueOf(user.getId()));
-                newFile.createNewFile();
-
-                try {
-                    Files.createFile(newFile.toPath());
-                    Files.write(newFile.toPath(), gson.toJson(user.getRawUser(), RawUser.class).getBytes());
-                } catch (FileAlreadyExistsException e) {
-                    // ignore, if exists, overwrite
-                }
-            }
-        }
-
-        // If the File object points at file
-        else if(dile.isFile()){
-            StringBuilder builder = new StringBuilder();
-            for(User user: users){
-                builder.append(gson.toJson(user, RawUser.class));
-                builder.append("\n");
-            }
-
-            Files.write(dile.toPath(), builder.toString().getBytes());
-        }
+        container.exportItems(path, user -> gson.toJson(user, RawUser.class));
     }
 
     /**

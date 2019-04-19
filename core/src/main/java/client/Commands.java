@@ -239,7 +239,7 @@ class Commands {
 
             case "board":
                 switch (tokens[2]){
-                    case "src/test/resources/tasks":
+                    case "task":
                         taskCommands(tokens, 3);
                         break;
                     case "list":

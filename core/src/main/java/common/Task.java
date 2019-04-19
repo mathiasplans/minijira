@@ -211,7 +211,7 @@ public class Task {
      * Mehthod for getting the ID of the task
      * @return ID of the task
      */
-    public long getTaskId() {
+    public long getId() {
         return taskId;
     }
 

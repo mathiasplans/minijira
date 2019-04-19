@@ -204,6 +204,7 @@ public class Boards {
      * Method for constructiong RawProject object from this class
      * @param id ID of the project which will be converted to RawProject
      * @return RawProject object
+     * @return RawProject object
      */
     public RawProject getRawProject(long id){
         // Get the list of tasks in board
