@@ -55,10 +55,8 @@ public class Server implements Runnable {
             /* Body of the thread */
 
             while (socket.isConnected()){
-                if(in.available() != 0){
-                    // Read a message
-                    MessageType type = messenger.readMessage();
-                }
+                // Read a message
+                MessageType type = messenger.readMessage();
             }
 
             /* End of body */
@@ -120,20 +118,22 @@ public class Server implements Runnable {
     @NotNull
     @Contract(" -> new")
     private ServerSocket getSS() throws IOException {
-        if(address == null)
-            return new ServerSocket(port);
-        else
-            return new ServerSocket(port, 0, address);
+        ServerSocket ss;
+
+        if(address == null) {
+            ss = new ServerSocket(port);
+            System.out.println("Server established on " + address.getHostAddress() + ":" + port);
+        }else {
+            ss = new ServerSocket(port, 0, address);
+            System.out.println("Server established on localhost:" + port);
+        }
+
+        return ss;
     }
 
     @Override
     public void run() {
         try(ServerSocket ss = getSS()){
-            if(address != null)
-                System.out.println("Server established on " + address.getHostAddress() + ":" + port);
-            else
-                System.out.println("Server established on localhost:" + port);
-
             mainLoop(ss);
         }catch (IOException e){
             throw new RuntimeException(e);

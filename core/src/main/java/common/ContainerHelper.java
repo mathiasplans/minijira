@@ -31,13 +31,15 @@ class ContainerHelper<ContainerType> {
 
         // If the File object points at directory
         if (Files.isDirectory(path)){
-            Files.walk(path).filter(Files::isRegularFile).forEach((p) -> {
-                try {
-                    container.add(converterJSONToItem.call(Files.readString(p)));
-                }catch (IOException e){
-                    throw new RuntimeException(e);
-                }
-            });
+            try (var files = Files.walk(path)){
+                files.filter(Files::isRegularFile).forEach((p) -> {
+                    try {
+                        container.add(converterJSONToItem.call(Files.readString(p)));
+                    }catch (IOException e){
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
         }
 
         // If the File object points at file
