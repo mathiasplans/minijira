@@ -8,6 +8,8 @@ import data.*;
 import messages.JiraMessageHandler;
 import messages.MessageType;
 import messages.ProtocolConnection;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
@@ -15,6 +17,7 @@ public class ServerMessage implements JiraMessageHandler {
     private final TaskContainer tasks;
     private final UserContainer users;
     private final Boards boards;
+    private final Order orderer;
     private ProtocolConnection connection;
 
     /**
@@ -22,21 +25,47 @@ public class ServerMessage implements JiraMessageHandler {
      * @param tasks
      * @param users
      */
-    public ServerMessage(TaskContainer tasks, UserContainer users, Boards boards) {
+    @Contract(pure = true)
+    public ServerMessage(TaskContainer tasks, UserContainer users, Boards boards, Order orderer) {
         this.tasks = tasks;
         this.users = users;
         this.boards = boards;
+        this.orderer = orderer;
     }
 
     public void setConnection(ProtocolConnection connection){
         this.connection = connection;
     }
 
+    private void sendResponse(Object o, MessageType type){
+        try {
+            connection.sendMessage(o, type);
+        }catch (IOException e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void respnd(){
+        sendResponse(null, MessageType.RESPONSE);
+    }
+
+    private void error(){
+        sendResponse(new RawError("Failed to send the message"), MessageType.ERROR);
+    }
+
     @Override
-    public RawError createTask(RawTask newTask) {
+    public RawError createTask(@NotNull RawTask newTask) {
         // TODO: Check user auth
+        System.out.println("AHHAAA!");
+
+        // Assign a new ID to the task
+        newTask.taskId = orderer.getID();
+
         // Creates a new task and stores it into the container
         tasks.newTask(newTask);
+
+        // Send the response
+        sendResponse(newTask, MessageType.UPDATETASK);
         return null;
     }
 
@@ -45,6 +74,9 @@ public class ServerMessage implements JiraMessageHandler {
         // TODO: Check user auth
         // Removes a task by it's id
         tasks.removeTask(taskId);
+
+        // Send the response
+        respnd();
         return null;
     }
 
@@ -53,6 +85,9 @@ public class ServerMessage implements JiraMessageHandler {
         // TODO: Check user auth
         // Update a task
         tasks.updateTask(updatedTask);
+
+        // Send the response
+        respnd();
         return null;
     }
 
@@ -62,6 +97,7 @@ public class ServerMessage implements JiraMessageHandler {
             try{
                 connection.sendMessage(task.getRawTask(), MessageType.UPDATETASK);
             }catch (IOException e){
+                error();
                 System.out.println("Failed to send message: " + e.getMessage());
             }
         }
@@ -85,6 +121,7 @@ public class ServerMessage implements JiraMessageHandler {
         try {
             connection.sendMessage(boards.getRawProjectNameList(), MessageType.SETPROJECTLIST);
         }catch (IOException e){
+            error();
             System.out.println("Failed to send message: " + e.getMessage());
         }
         return null;
@@ -97,18 +134,19 @@ public class ServerMessage implements JiraMessageHandler {
 
     @Override
     public RawError getProject(Long projectId) {
-        for(Task task: tasks.getTasks(projectId)){
-            try{
-                connection.sendMessage(boards.getRawProject(projectId), MessageType.SETPROJECT);
-            }catch (IOException e){
-                System.out.println("Failed to send message: " + e.getMessage());
-            }
+        try{
+            connection.sendMessage(boards.getRawProject(projectId), MessageType.SETPROJECT);
+        }catch (IOException e){
+            error();
+            System.out.println("Failed to send message: " + e.getMessage());
         }
         return null;
     }
 
     @Override
     public RawError setProject(RawProject rawProject) {
+        boards.registerBoard(rawProject);
+        respnd();
         return null;
     }
 }

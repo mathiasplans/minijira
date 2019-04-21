@@ -53,8 +53,11 @@ public class Client {
          */
         ProtocolConnection messenger = new ProtocolConnection(null, out, in, handler);
 
+        // Synchronisation object
+        Sync sync = new Sync(messenger, in);
+
         // Command handler object
-        Commands commands = new Commands(tasks, users, messenger);
+        Commands commands = new Commands(tasks, users, boards, messenger, sync);
 
         // Command line input
         Scanner scin = new Scanner(System.in);
@@ -68,9 +71,9 @@ public class Client {
         }
 
         // Save data
-        users.saveUsers();
-        tasks.saveTasks();
-        boards.saveBoards();
+//        users.saveUsers();
+//        tasks.saveTasks();
+//        boards.saveBoards();
     }
 
     /**

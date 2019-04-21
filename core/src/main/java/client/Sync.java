@@ -1,8 +1,12 @@
 package client;
 
+import common.Boards;
 import common.Task;
+import data.RawProject;
+import data.RawTask;
 import messages.MessageType;
 import messages.ProtocolConnection;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -43,12 +47,28 @@ public class Sync {
      * @param task
      * @throws IOException
      */
-    public void createTask(Task task) throws IOException {
+    public void createTask(@NotNull Task task) throws IOException {
         // Send the message
         connection.sendMessage(task.getRawTask(), MessageType.CREATETASK);
 
         // Wait for UPDATETASK type message
         if(waitForResponse() != MessageType.UPDATETASK){
+            // Handle error
+        }
+    }
+
+    /**
+     * Task removal request. Should be responded to with RESPONSE
+     * REMOVETASK -> RESPONSE
+     * @param task
+     * @throws IOException
+     */
+    public void removeTask(Task task) throws IOException {
+        // Send the message
+        connection.sendMessage(task.getId(), MessageType.REMOVETASK);
+
+        // Wait for RESPONSE type message
+        if(waitForResponse() != MessageType.RESPONSE){
             // Handle error
         }
     }
@@ -74,11 +94,43 @@ public class Sync {
      * @param boards
      * @throws IOException
      */
-    public void getTasks(Set<Long> boards) throws IOException {
+    public void getTasks(@NotNull Set<Long> boards) throws IOException {
         // For every board, send the query
         // TODO: this is costly, tasks can be in multiple boards
         for(Long boardID: boards){
             getBoardTasks(boardID);
+        }
+    }
+
+    /**
+     * Requests the list of boards. Should be responded to with SETPROJECTLIST
+     * GETPROJECTLIST -> SETPROJECTLIST
+     * @throws IOException
+     */
+    public void getBoards() throws IOException {
+        // Send the request
+        connection.sendMessage(null, MessageType.GETPROJECTLIST);
+
+        // Wait for the response
+        if(waitForResponse() != MessageType.SETPROJECTLIST){
+            // Handle error
+        }
+    }
+
+    /**
+     * Board creation request. Should be responded to with RESPONSE
+     * SETPROJECT -> RESPONSE
+     * @param id
+     * @param name
+     * @throws IOException
+     */
+    public void createBoard(long id, String name) throws IOException {
+        // Send the request
+        connection.sendMessage(new RawProject(id, new RawTask[]{}, name, "URL"), MessageType.SETPROJECT);
+
+        // Wait for the response
+        if(waitForResponse() != MessageType.RESPONSE){
+            // Handle error
         }
     }
 }

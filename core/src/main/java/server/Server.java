@@ -27,7 +27,7 @@ public class Server implements Runnable {
         this.port = port;
     }
 
-    private void clientHandler(@NotNull Socket socket, UserContainer users, TaskContainer tasks, Boards boards){
+    private void clientHandler(@NotNull Socket socket, UserContainer users, TaskContainer tasks, Boards boards, Order orderer){
         // IO objects
         try(
                 socket;
@@ -41,7 +41,7 @@ public class Server implements Runnable {
             /*
              * ServerMessage object. Implementation of handling of incoming messages from a client
              */
-            ServerMessage handler = new ServerMessage(tasks, users, boards);
+            ServerMessage handler = new ServerMessage(tasks, users, boards, orderer);
 
             /*
              * ProtocolConnection object. Handles the messages.
@@ -57,6 +57,11 @@ public class Server implements Runnable {
             while (socket.isConnected()){
                 // Read a message
                 MessageType type = messenger.readMessage();
+
+                // DEBUG
+                tasks.saveTasks();
+                users.saveUsers();
+                boards.saveBoards();
             }
 
             /* End of body */
@@ -87,6 +92,7 @@ public class Server implements Runnable {
             UserContainer users = new UserContainer(Path.of("core", "src", "main", "java", "server", "users"));
             TaskContainer tasks = new TaskContainer(Path.of("core", "src", "main", "java", "server", "tasks"));
             Boards boards = new Boards(tasks, Path.of("core", "src", "main", "java", "server", "boards"));
+            Order orderer = new Order(tasks);
 
             // Accept a connection from a client
             try {
@@ -97,7 +103,7 @@ public class Server implements Runnable {
 
                 // Create a thread for the client
                 Thread thread = new Thread(() -> {
-                    clientHandler(socket, users, tasks, boards);
+                    clientHandler(socket, users, tasks, boards, orderer);
                 });
 
                 // Start the thread
@@ -122,10 +128,10 @@ public class Server implements Runnable {
 
         if(address == null) {
             ss = new ServerSocket(port);
-            System.out.println("Server established on " + address.getHostAddress() + ":" + port);
+            System.out.println("Server established on localhost:" + port);
         }else {
             ss = new ServerSocket(port, 0, address);
-            System.out.println("Server established on localhost:" + port);
+            System.out.println("Server established on " + address.getHostAddress() + ":" + port);
         }
 
         return ss;

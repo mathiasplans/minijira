@@ -1,14 +1,17 @@
 package client;
 
+import common.Boards;
 import common.Task;
 import common.TaskContainer;
 import common.UserContainer;
 import messages.MessageType;
 import messages.ProtocolConnection;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 /**
  * This class will take user input (as a string) and then handles it
@@ -16,7 +19,9 @@ import java.util.List;
 class Commands {
     private final TaskContainer taskContainer;
     private final UserContainer userContainer;
+    private final Boards boards;
     private final ProtocolConnection connection;
+    private final Sync sync;
 
     private boolean running = true;
 
@@ -25,10 +30,13 @@ class Commands {
      * @param taskContainer TaskContainer object, is filled with tasks!
      * @param userContainer UserContainer object, is filled with users!
      */
-    Commands(TaskContainer taskContainer, UserContainer userContainer, ProtocolConnection connection) {
+    @Contract(pure = true)
+    Commands(TaskContainer taskContainer, UserContainer userContainer, Boards boards, ProtocolConnection connection, Sync sync) {
         this.taskContainer = taskContainer;
         this.userContainer = userContainer;
+        this.boards = boards;
         this.connection = connection;
+        this.sync = sync;
     }
 
     /**
@@ -39,6 +47,15 @@ class Commands {
         return running;
     }
 
+    private boolean checkArgumentLength(String scope, int length, int max){
+        if(length < max + 1){
+            System.out.println(scope + ": Not enough arguments");
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Command parser for 'task set ___'
      * @param tokens parsed command split up
@@ -46,11 +63,8 @@ class Commands {
      * @exception IOException If communication with server fails
      */
     private void taskSet(@NotNull String[] tokens, int level) throws IOException {
-        // Check whether there are enough arguments
-        if(tokens.length < level + 3) {
-            System.out.println("Task Set: Not enough arguments");
+        if(checkArgumentLength("Task Set", tokens.length, level + 2))
             return;
-        }
 
         // Get the task
         Task subject = taskContainer.getTask(Long.parseLong(tokens[level + 1]));
@@ -95,7 +109,7 @@ class Commands {
         }
 
         // Update the subject in server
-        connection.sendMessage(subject.getRawTask(), MessageType.UPDATETASK);
+        sync.updateTask(subject);
     }
 
     /**
@@ -105,11 +119,8 @@ class Commands {
      * @exception IOException If communication with server fails
      */
     private void taskAdd(@NotNull String[] tokens, int level) throws IOException {
-        // Check whether there are enough arguments
-        if(tokens.length < level + 3){
-            System.out.println("Task Add: Not enough arguments");
+        if(checkArgumentLength("Task Add", tokens.length, level + 2))
             return;
-        }
 
         // Get the task
         Task subject = taskContainer.getTask(Long.parseLong(tokens[level + 1]));
@@ -138,7 +149,7 @@ class Commands {
         }
 
         // Update the task in server
-        connection.sendMessage(subject.getRawTask(), MessageType.UPDATETASK);
+        sync.updateTask(subject);
     }
 
     /**
@@ -147,16 +158,22 @@ class Commands {
      * @param level level of the parse, which word is handled from the tokens
      */
     private void taskCommands(@NotNull String[] tokens, int level) throws IOException {
-        if(tokens.length < level + 2){
-            System.out.println("Task: Not enough arguments");
-            return;
+        /* Commands with no arguments */
+        switch (tokens[level]){
+            case "list":
+                printBrief(taskContainer.getTasks());
+                return;
         }
+
+        /* commands with arguments */
+        if(checkArgumentLength("Task", tokens.length, level + 1))
+            return;
 
         // Update the task which is queried
         switch (tokens[level]) {
             case "create":
-                // Kui argumendiks on antud ainult nimi
-                taskContainer.newTask(tokens[level + 1]);
+                Task createTask = new Task(-1, tokens[level + 1]);
+                sync.createTask(createTask);
                 break;
             case "info":
                 Task infoTask = taskContainer.getTask(Long.parseLong(tokens[level + 1]));
@@ -172,7 +189,7 @@ class Commands {
                     completeTask.complete();
 
                     // Update the task in server
-                    connection.sendMessage(completeTask.getRawTask(), MessageType.UPDATETASK);
+                    sync.updateTask(completeTask);
                 }
                 else
                     System.out.println("Task with this ID does not exist");
@@ -184,6 +201,7 @@ class Commands {
             case "add":
                 taskAdd(tokens, level + 1);
                 break;
+
             default:
                 System.out.println("Task: Command does not exist");
         }
@@ -200,12 +218,69 @@ class Commands {
     }
 
     /**
+     * Print a brief task overview with Task ID and Task's title
+     * @param tasks what tasks are to be printed out
+     */
+    private void printBrief(@NotNull List<Task> tasks){
+        for(Task task: tasks){
+            System.out.printf(" %4d %s\n", task.getId(), task.getTitle());
+        }
+    }
+
+    /**
      * Method for printing out the manual of the program
      * // TODO: manual is empty at the moment
      */
     private void printManual(){
         System.out.println("manual");
     }
+
+    /**
+     * Command parser for 'board ___'
+     * @param tokens parsed command split up
+     * @param level level of the parse, which word is handled from the tokens
+     */
+    private void boardCommands(@NotNull String[] tokens, int level) throws IOException {
+        switch (tokens[level]) {
+            case "create":
+                checkArgumentLength("Board", tokens.length, level + 3);
+                long createID = Long.parseLong(tokens[level + 1]);
+                String createName = tokens[level + 2];
+                boards.registerBoard(createID, createName);
+                sync.createBoard(createID, createName);
+                break;
+
+            case "add":
+                checkArgumentLength("Board", tokens.length, level + 3);
+                long addTaskID = Long.parseLong(tokens[level + 1]);
+                long addBoardID = Long.parseLong(tokens[level + 2]);
+                Task addTask = taskContainer.getTask(addTaskID);
+                addTask.addBoard(addBoardID);
+                sync.updateTask(addTask);
+                break;
+
+            case "pull":
+                if(tokens.length == level + 2) {
+                    long pullID = Long.parseLong(tokens[level + 1]);
+                    sync.getBoardTasks(pullID);
+                }else{
+                    sync.getBoards();
+                    sync.getTasks(boards.getKeySet());
+                }
+                break;
+
+            case "list":
+                Set<Long> boardList = boards.getKeySet();
+                for(long boardID: boardList){
+                    System.out.printf(" %4d %s\n", boardID, boards.getBoardName(boardID));
+                }
+                break;
+
+            default:
+                System.out.println("Task: Command does not exist");
+        }
+    }
+
 
     /**
      * The root of the parser.
@@ -219,9 +294,9 @@ class Commands {
          * [area] [operation] [argument(s)]
          */
 
-        // If string is empty
-        if("".equals(command))
-            throw new IllegalArgumentException();
+        // If string is empty, ignore
+        if(command.isBlank())
+            return;
 
         // Tokenize the command
         String[] tokens = command.split(" ");
@@ -238,18 +313,15 @@ class Commands {
                 break;
 
             case "board":
-                switch (tokens[2]){
-                    case "task":
-                        taskCommands(tokens, 3);
-                        break;
-                    case "list":
-                        printTasks(taskContainer.getTasks(Long.parseLong(tokens[1])));
-                        break;
-                }
+                boardCommands(tokens, 1);
                 break;
 
             case "save":
                 taskContainer.saveTasks();
+                break;
+
+            case "pull":
+                sync.getTasks(boards.getKeySet());
                 break;
 
             default:

@@ -1,5 +1,6 @@
 package client;
 
+import com.google.gson.Gson;
 import common.Boards;
 import common.TaskContainer;
 import common.UserContainer;

@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Boards {
     private final Map<Long, String> boardNames = new HashMap<>();
@@ -68,8 +69,8 @@ public class Boards {
             List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
 
             for(String line: lines) {
-                if (!"".equals(line))
-                    boardNames.put(Long.parseLong(line.split(",")[0].replaceAll("[^0-9]", "")), line.split(" ")[1]);
+                if (!line.isBlank())
+                    boardNames.put(Long.parseLong(line.split(",")[0].replaceAll("[^0-9]", "")), line.split(",")[1]);
             }
         }
 
@@ -217,5 +218,9 @@ public class Boards {
         }
 
         return new RawProject(id, rawTasks, boardNames.get(id), "");
+    }
+
+    public Set<Long> getKeySet(){
+        return boardNames.keySet();
     }
 }

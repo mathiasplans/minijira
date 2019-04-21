@@ -84,17 +84,6 @@ public class TaskContainer {
         /* Fill the list */
         container.importItems(path, json -> new Task(gson.fromJson(json, RawTask.class), gitHub));
 
-        /* Determine the order */
-        // Get the biggest ID
-        long biggestTaskId = -1;
-        for(Task task: tasks){
-            if(task.getId() > biggestTaskId)
-                biggestTaskId = task.getId();
-        }
-
-        // Set new order. This ensures that old Task IDs don't get overwritten
-        order = biggestTaskId + 1;
-
         // Set the save path
         inpath = path;
     }
@@ -160,14 +149,15 @@ public class TaskContainer {
      * @param name name of the task
      * @return the created task
      */
-    public Task newTask(String name){
-        Task newTask = new Task(order++, name);
+    public Task newTask(long id, String name){
+        Task newTask = new Task(id, name);
         tasks.add(newTask);
         return newTask;
     }
 
     /**
      * Method for creating a new task into the container
+     * @param id task ID
      * @param name name of the task
      * @param description description of the task
      * @param board board ID where this task belongs
@@ -176,8 +166,8 @@ public class TaskContainer {
      * @param priority priority of the task
      * @return the created task
      */
-    public Task newTask(String name, String description, long board, long deadline, User author, int priority){
-        Task newTask = new Task(order++, name, description, board, deadline, author, priority, gitHub);
+    public Task newTask(long id, String name, String description, long board, long deadline, User author, int priority){
+        Task newTask = new Task(id, name, description, board, deadline, author, priority, gitHub);
         tasks.add(newTask);
         return newTask;
     }
