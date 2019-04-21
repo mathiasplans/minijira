@@ -10,6 +10,9 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
 
@@ -231,8 +234,8 @@ class Commands {
      * Method for printing out the manual of the program
      * // TODO: manual is empty at the moment
      */
-    private void printManual(){
-        System.out.println("manual");
+    private void printManual() throws IOException {
+        System.out.println(Files.readString(Paths.get("core","src", "main", "resources", "manual")));
     }
 
     /**
@@ -277,7 +280,7 @@ class Commands {
                 break;
 
             default:
-                System.out.println("Task: Command does not exist");
+                System.out.println("Board: Command does not exist");
         }
     }
 
@@ -318,6 +321,8 @@ class Commands {
 
             case "save":
                 taskContainer.saveTasks();
+                userContainer.saveUsers();
+                boards.saveBoards();
                 break;
 
             case "pull":
