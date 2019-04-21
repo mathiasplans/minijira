@@ -369,7 +369,8 @@ public class Task {
         for(String line: lines){
             builder.append("| ");
             builder.append(line);
-            builder.append(" |");
+            builder.append(" ".repeat(width - 3 - line.length()));
+            builder.append("|\n");
         }
 
         return new String(builder);

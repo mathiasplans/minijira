@@ -1,3 +1,5 @@
+NOTE: not all the commands work, sadly
+
 quit  -- quit the program
 man   -- print out the manual
 task  -- commands which interact with tasks

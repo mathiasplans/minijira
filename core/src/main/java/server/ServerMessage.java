@@ -56,10 +56,12 @@ public class ServerMessage implements JiraMessageHandler {
     @Override
     public RawError createTask(@NotNull RawTask newTask) {
         // TODO: Check user auth
-        System.out.println("AHHAAA!");
-
         // Assign a new ID to the task
         newTask.taskId = orderer.getID();
+
+        // Set a default board
+        if(newTask.boards[0] == -1)
+            newTask.boards[0] = 0;
 
         // Creates a new task and stores it into the container
         tasks.newTask(newTask);

@@ -86,8 +86,13 @@ class Commands {
                 break;
 
             case "description":
+                StringBuilder builder = new StringBuilder();
+                for(int i = level + 2; i < tokens.length; i++){
+                    builder.append(tokens[i]);
+                    builder.append(" ");
+                }
                 // task set description <id> <title>
-                subject.setDescription(tokens[level + 2]);
+                subject.setDescription(builder.toString());
                 break;
 
             case "deadline":
@@ -246,7 +251,7 @@ class Commands {
     private void boardCommands(@NotNull String[] tokens, int level) throws IOException {
         switch (tokens[level]) {
             case "create":
-                checkArgumentLength("Board", tokens.length, level + 3);
+                checkArgumentLength("Board", tokens.length, level + 2);
                 long createID = Long.parseLong(tokens[level + 1]);
                 String createName = tokens[level + 2];
                 boards.registerBoard(createID, createName);
@@ -254,7 +259,7 @@ class Commands {
                 break;
 
             case "add":
-                checkArgumentLength("Board", tokens.length, level + 3);
+                checkArgumentLength("Board", tokens.length, level + 2);
                 long addTaskID = Long.parseLong(tokens[level + 1]);
                 long addBoardID = Long.parseLong(tokens[level + 2]);
                 Task addTask = taskContainer.getTask(addTaskID);
