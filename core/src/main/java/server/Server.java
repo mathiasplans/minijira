@@ -89,9 +89,9 @@ public class Server implements Runnable {
              * UserContainer and TaskContainer. This is the data the server serves.
              * Both containers hold users and tasks respectively.
              */
-            UserContainer users = new UserContainer(Path.of("core", "src", "main", "java", "server", "users"));
-            TaskContainer tasks = new TaskContainer(Path.of("core", "src", "main", "java", "server", "tasks"));
-            Boards boards = new Boards(tasks, Path.of("core", "src", "main", "java", "server", "boards"));
+            UserContainer users = new UserContainer(Path.of("core", "data", "server", "users"));
+            TaskContainer tasks = new TaskContainer(Path.of("core", "data", "server", "tasks"));
+            Boards boards = new Boards(tasks, Path.of("core", "data", "server", "boards"));
             Order orderer = new Order(tasks);
 
             // Accept a connection from a client

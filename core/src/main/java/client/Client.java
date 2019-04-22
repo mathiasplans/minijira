@@ -36,9 +36,9 @@ public class Client {
          * UserContainer and TaskContainer. This is the data the server serves.
          * Both containers hold users and tasks respectively.
          */
-        UserContainer users = new UserContainer(Path.of("core", "src", "main", "java", "client", "users"));
-        TaskContainer tasks = new TaskContainer(Path.of("core", "src", "main", "java", "client", "tasks"));
-        Boards boards = new Boards(tasks, Path.of("core", "src", "main", "java", "client", "boards"));
+        UserContainer users = new UserContainer(Path.of("core", "data", "client", "users"));
+        TaskContainer tasks = new TaskContainer(Path.of("core", "data", "client", "tasks"));
+        Boards boards = new Boards(tasks, Path.of("core", "data", "client", "boards"));
 
 
         // Message object
