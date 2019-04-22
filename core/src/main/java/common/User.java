@@ -13,7 +13,7 @@ public class User {
     private String email;
     private final long id;
     private long lastOnline;
-    private final List<Long> friends = new ArrayList<>();
+    private final Set<Long> friends = new HashSet<>();
     private final Map<Long, Permissions> permissions = new HashMap<>();
     private final byte[] hash;
     private final byte[] salt;
@@ -78,9 +78,10 @@ public class User {
 
         // Fill the friends
         out.friendList = new long[friends.size()];
+        List<Long> friendList = new ArrayList<>(friends);
 
         for (int i = 0; i < out.friendList.length; i++) {
-            out.friendList[i] = friends.get(i);
+            out.friendList[i] = friendList.get(i);
         }
 
         return out;

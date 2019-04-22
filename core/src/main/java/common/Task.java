@@ -24,8 +24,8 @@ public class Task {
     private long deadlineMS;
     private final long dateCreatedMS;
     private long masterTaskId;
-    private final List<User> assignedEmployees = new ArrayList<>();
-    private final List<Long> boards = new ArrayList<>();
+    private final Set<User> assignedEmployees = new HashSet<>();
+    private final Set<Long> boards = new HashSet<>();
 
     // GitHub
     private final GitHub gitHub;
@@ -133,15 +133,17 @@ public class Task {
             out.createdBy = createdBy.getId();
 
         out.assignedEmployees = new long[assignedEmployees.size()];
+        List<User> assigneeList = new ArrayList<>(assignedEmployees);
 
         for (int i = 0; i < out.assignedEmployees.length; i++) {
-            out.assignedEmployees[i] = assignedEmployees.get(i).getId();
+            out.assignedEmployees[i] = assigneeList.get(i).getId();
         }
 
         out.boards = new long[boards.size()];
+        List<Long> boardList = new ArrayList<>(boards);
 
         for (int i = 0; i < out.boards.length; i++) {
-            out.boards[i] = boards.get(i);
+            out.boards[i] = boardList.get(i);
         }
 
         return out;
@@ -328,18 +330,18 @@ public class Task {
     }
 
     /**
-     * Method for acquiring the list of the assignees
+     * Method for acquiring the set of the assignees
      * @return list of the assignees of the task
      */
-    public List<User> getAssignedEmployees() {
+    public Set<User> getAssignedEmployees() {
         return assignedEmployees;
     }
 
     /**
-     * Method for getting the List of the boards
+     * Method for getting the set of the boards
      * @return list of the boards where this task belongs
      */
-    public List<Long> getBoards() {
+    public Set<Long> getBoards() {
         return boards;
     }
 
