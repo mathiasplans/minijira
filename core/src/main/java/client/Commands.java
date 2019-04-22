@@ -10,6 +10,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -240,7 +242,13 @@ class Commands {
      * // TODO: manual is empty at the moment
      */
     private void printManual() throws IOException {
-        System.out.println(Files.readString(Paths.get("core","src", "main", "resources", "manual")));
+        InputStream fin = this.getClass().getClassLoader().getResourceAsStream("manual");
+        if(fin != null){
+            byte[] file = fin.readAllBytes();
+            System.out.println(new String(file));
+        }else{
+            System.out.println("Manual not found");
+        }
     }
 
     /**

@@ -37,7 +37,7 @@ public class ServerMessage implements JiraMessageHandler {
         this.connection = connection;
     }
 
-    private void sendResponse(Object o, MessageType type){
+    private void sendResponse(Object o, MessageType type) {
         try {
             connection.sendMessage(o, type);
         }catch (IOException e){
@@ -49,8 +49,8 @@ public class ServerMessage implements JiraMessageHandler {
         sendResponse(null, MessageType.RESPONSE);
     }
 
-    private void error(){
-        sendResponse(new RawError("Failed to send the message"), MessageType.ERROR);
+    private void error(Exception e){
+        sendResponse(new RawError("Failed to send the message\n" + e.getMessage()), MessageType.ERROR);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class ServerMessage implements JiraMessageHandler {
             try{
                 connection.sendMessage(task.getRawTask(), MessageType.UPDATETASK);
             }catch (IOException e){
-                error();
+                error(e);
                 System.out.println("Failed to send message: " + e.getMessage());
             }
         }
@@ -123,7 +123,7 @@ public class ServerMessage implements JiraMessageHandler {
         try {
             connection.sendMessage(boards.getRawProjectNameList(), MessageType.SETPROJECTLIST);
         }catch (IOException e){
-            error();
+            error(e);
             System.out.println("Failed to send message: " + e.getMessage());
         }
         return null;
@@ -139,7 +139,7 @@ public class ServerMessage implements JiraMessageHandler {
         try{
             connection.sendMessage(boards.getRawProject(projectId), MessageType.SETPROJECT);
         }catch (IOException e){
-            error();
+            error(e);
             System.out.println("Failed to send message: " + e.getMessage());
         }
         return null;
