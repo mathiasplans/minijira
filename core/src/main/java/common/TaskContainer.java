@@ -3,7 +3,6 @@ package common;
 import com.google.gson.Gson;
 import data.RawTask;
 import org.jetbrains.annotations.NotNull;
-import org.kohsuke.github.GitHub;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -23,7 +22,6 @@ public class TaskContainer {
 
     // Task creation
     private long order = 0;
-    private final GitHub gitHub = null; // TODO
 
     /**
      * Default constructor. Initializes the list of the tasks
@@ -78,7 +76,7 @@ public class TaskContainer {
      */
     private void importTasks(Path path) throws IOException {
         /* Fill the list */
-        container.importItems(path, json -> new Task(gson.fromJson(json, RawTask.class), gitHub));
+        container.importItems(path, json -> new Task(gson.fromJson(json, RawTask.class)));
 
         // Set the save path
         inpath = path;
@@ -163,7 +161,7 @@ public class TaskContainer {
      * @return the created task
      */
     public Task newTask(long id, String name, String description, long board, long deadline, User author, int priority){
-        Task newTask = new Task(id, name, description, board, deadline, author, priority, gitHub);
+        Task newTask = new Task(id, name, description, board, deadline, author, priority);
         tasks.add(newTask);
         return newTask;
     }
@@ -174,7 +172,7 @@ public class TaskContainer {
      * @return the created task
      */
     public Task newTask(RawTask task){
-        Task newTask = new Task(task, gitHub);
+        Task newTask = new Task(task);
         tasks.add(newTask);
         return newTask;
     }

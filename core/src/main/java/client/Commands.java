@@ -8,8 +8,10 @@ import messages.ProtocolConnection;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 
@@ -234,15 +236,14 @@ class Commands {
 
     /**
      * Method for printing out the manual of the program
-     * // TODO: manual is empty at the moment
      */
     private void printManual() throws IOException {
         InputStream fin = this.getClass().getClassLoader().getResourceAsStream("manual");
         if(fin != null){
             byte[] file = fin.readAllBytes();
-            System.out.println(new String(file));
+            System.out.println(new String(file, StandardCharsets.UTF_8));
         }else{
-            System.out.println("Manual not found");
+            throw new FileNotFoundException("Manual not found");
         }
     }
 
