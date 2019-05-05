@@ -13,7 +13,7 @@ import messages.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-public class Server implements Runnable {
+public class    Server implements Runnable {
     private final InetAddress address;
     private final int port;
 

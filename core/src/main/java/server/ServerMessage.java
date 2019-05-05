@@ -113,6 +113,9 @@ public class ServerMessage implements JiraMessageHandler {
     @Override
     public RawError login(RawLogin rawLogin) {
         // TODO: user auth
+        if(rawLogin.password == null){
+
+        }
         return null;
     }
 

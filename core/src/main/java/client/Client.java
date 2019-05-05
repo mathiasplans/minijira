@@ -31,7 +31,6 @@ public class Client {
             System.out.println("Connected to localhost:" + port);
         else
             System.out.println("Connected to " + address.getHostAddress() + ":" + port);
-
         /*
          * UserContainer and TaskContainer. This is the data the server serves.
          * Both containers hold users and tasks respectively.
@@ -45,7 +44,7 @@ public class Client {
         /*
          * ServerMessage object. Implementation of handling of incoming messages from a client
          */
-        ClientMessage handler = new ClientMessage(tasks, users, boards);
+        ClientMessage handler = new ClientMessage(tasks, users, boards, authentification);
 
         /*
          * ProtocolConnection object. Handles the messages.
@@ -61,6 +60,10 @@ public class Client {
 
         // Command line input
         Scanner scin = new Scanner(System.in);
+
+        // Authorisation process
+        ClientAuth authentification = new ClientAuth(sync, messenger, scin);
+        authentification.login_request();
 
         // Main loop
         while (commands.isRunning()) {

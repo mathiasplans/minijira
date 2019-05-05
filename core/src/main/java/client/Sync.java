@@ -2,6 +2,7 @@ package client;
 
 import common.Boards;
 import common.Task;
+import data.RawLogin;
 import data.RawProject;
 import data.RawTask;
 import messages.MessageType;
@@ -130,6 +131,24 @@ public class Sync {
 
         // Wait for the response
         if(waitForResponse() != MessageType.RESPONSE){
+            // Handle error
+        }
+    }
+
+    /**
+     * Login request. Should be responded to with RESPONSE
+     * SETPROJECT -> RESPONSE
+     * @param username
+     * @param password
+     * @throws IOException
+     */
+    public void login(String username, String password) throws IOException {
+        // Send the request
+        connection.sendMessage(new RawLogin(username, password), MessageType.LOGIN);
+
+        // Wait for the response TODO: correct response
+        //if(waitForResponse() != MessageType.RESPONSE){
+        if(waitForResponse() != MessageType.LOGIN){
             // Handle error
         }
     }

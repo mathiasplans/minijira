@@ -14,11 +14,13 @@ public class ClientMessage implements JiraMessageHandler {
     private final TaskContainer tasks;
     private final UserContainer users;
     private final Boards boards;
+    private final ClientAuth auth;
 
-    public ClientMessage(TaskContainer tasks, UserContainer users, Boards boards) {
+    public ClientMessage(TaskContainer tasks, UserContainer users, Boards boards, ClientAuth auth) {
         this.tasks = tasks;
         this.users = users;
         this.boards = boards;
+        this.auth = auth;
     }
 
     @Override
@@ -51,6 +53,9 @@ public class ClientMessage implements JiraMessageHandler {
 
     @Override
     public RawError login(RawLogin rawLogin) {
+        if(rawLogin.username == "accepted"){
+            auth.password_request(true);
+        }
         return null;
     }
 
