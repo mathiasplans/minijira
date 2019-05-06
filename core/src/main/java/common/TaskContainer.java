@@ -1,15 +1,11 @@
 package common;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import data.RawTask;
 import org.jetbrains.annotations.NotNull;
-import org.kohsuke.github.GitHub;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -27,7 +23,6 @@ public class TaskContainer {
 
     // Task creation
     private long order = 0;
-    private final GitHub gitHub = null; // TODO
 
     /**
      * Default constructor. Initializes the list of the tasks
@@ -82,8 +77,11 @@ public class TaskContainer {
      */
     private void importTasks(Path path) throws IOException {
         /* Fill the list */
-        container.importItems(path, json -> new Task(gson.fromJson(json, RawTask.class), gitHub));
-
+        try{
+            container.importItems(path, json -> new Task(gson.fromJson(json, RawTask.class)));
+        }catch(JsonSyntaxException e){
+            System.out.println("Failed to import tasks");
+        }
         // Set the save path
         inpath = path;
     }
@@ -167,7 +165,7 @@ public class TaskContainer {
      * @return the created task
      */
     public Task newTask(long id, String name, String description, long board, long deadline, User author, int priority){
-        Task newTask = new Task(id, name, description, board, deadline, author, priority, gitHub);
+        Task newTask = new Task(id, name, description, board, deadline, author, priority);
         tasks.add(newTask);
         return newTask;
     }
@@ -178,7 +176,7 @@ public class TaskContainer {
      * @return the created task
      */
     public Task newTask(RawTask task){
-        Task newTask = new Task(task, gitHub);
+        Task newTask = new Task(task);
         tasks.add(newTask);
         return newTask;
     }

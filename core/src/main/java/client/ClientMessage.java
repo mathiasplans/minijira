@@ -1,6 +1,5 @@
 package client;
 
-import com.google.gson.Gson;
 import common.Boards;
 import common.TaskContainer;
 import common.UserContainer;
@@ -54,8 +53,15 @@ public class ClientMessage implements JiraMessageHandler {
     @Override
     public RawError login(RawLogin rawLogin) {
         if(rawLogin.username == "accepted"){
-            auth.password_request(true);
+            auth.passwordRequest(true);
+        }else if(rawLogin.username == "denied"){
+            auth.passwordRequest(false);
         }
+        return null;
+    }
+
+    @Override
+    public RawError userInfo(RawUser user) {
         return null;
     }
 

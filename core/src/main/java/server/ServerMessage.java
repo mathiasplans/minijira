@@ -37,7 +37,7 @@ public class ServerMessage implements JiraMessageHandler {
         this.connection = connection;
     }
 
-    private void sendResponse(Object o, MessageType type){
+    private void sendResponse(Object o, MessageType type) {
         try {
             connection.sendMessage(o, type);
         }catch (IOException e){
@@ -49,17 +49,19 @@ public class ServerMessage implements JiraMessageHandler {
         sendResponse(null, MessageType.RESPONSE);
     }
 
-    private void error(){
-        sendResponse(new RawError("Failed to send the message"), MessageType.ERROR);
+    private void error(Exception e){
+        sendResponse(new RawError("Failed to send the message\n" + e.getMessage()), MessageType.ERROR);
     }
 
     @Override
     public RawError createTask(@NotNull RawTask newTask) {
         // TODO: Check user auth
-        System.out.println("AHHAAA!");
-
         // Assign a new ID to the task
         newTask.taskId = orderer.getID();
+
+        // Set a default board
+        if(newTask.boards[0] == -1)
+            newTask.boards[0] = 0;
 
         // Creates a new task and stores it into the container
         tasks.newTask(newTask);
@@ -97,7 +99,7 @@ public class ServerMessage implements JiraMessageHandler {
             try{
                 connection.sendMessage(task.getRawTask(), MessageType.UPDATETASK);
             }catch (IOException e){
-                error();
+                error(e);
                 System.out.println("Failed to send message: " + e.getMessage());
             }
         }
@@ -113,9 +115,31 @@ public class ServerMessage implements JiraMessageHandler {
     @Override
     public RawError login(RawLogin rawLogin) {
         // TODO: user auth
-        if(rawLogin.password == null){
+        try{
+            if(rawLogin.password == null){
+                if(users.getUser(rawLogin.username) != null){
+                    connection.sendMessage(new RawLogin("accepted", null), MessageType.LOGIN);
+                }else{
+                    connection.sendMessage(new RawLogin("denied", null), MessageType.LOGIN);
+                }
+            }else{
+                if(users.getUser(rawLogin.username) != null){
 
+                    connection.sendMessage(new RawLogin("accepted", null), MessageType.LOGIN);
+                }else{
+                    connection.sendMessage(new RawLogin("registering", null), MessageType.LOGIN);
+                }
+            }
+        }catch (IOException e){
+            error(e);
+            System.out.println("Failed to send message: " + e.getMessage());
         }
+        return null;
+    }
+
+    @Override
+    public RawError userInfo(RawUser user) {
+        respnd();
         return null;
     }
 
@@ -124,7 +148,7 @@ public class ServerMessage implements JiraMessageHandler {
         try {
             connection.sendMessage(boards.getRawProjectNameList(), MessageType.SETPROJECTLIST);
         }catch (IOException e){
-            error();
+            error(e);
             System.out.println("Failed to send message: " + e.getMessage());
         }
         return null;
@@ -140,7 +164,7 @@ public class ServerMessage implements JiraMessageHandler {
         try{
             connection.sendMessage(boards.getRawProject(projectId), MessageType.SETPROJECT);
         }catch (IOException e){
-            error();
+            error(e);
             System.out.println("Failed to send message: " + e.getMessage());
         }
         return null;

@@ -35,10 +35,11 @@ public class Client {
          * UserContainer and TaskContainer. This is the data the server serves.
          * Both containers hold users and tasks respectively.
          */
-        UserContainer users = new UserContainer(Path.of("core", "src", "main", "java", "client", "users"));
-        TaskContainer tasks = new TaskContainer(Path.of("core", "src", "main", "java", "client", "tasks"));
-        Boards boards = new Boards(tasks, Path.of("core", "src", "main", "java", "client", "boards"));
+        UserContainer users = new UserContainer(Path.of("data", "client", "users"));
+        TaskContainer tasks = new TaskContainer(Path.of("data", "client", "tasks"));
+        Boards boards = new Boards(tasks, Path.of("data", "client", "boards"));
 
+        ClientAuth authentification = new ClientAuth(); //Empty constructor, fields added later: avoids dependency conflicts
 
         // Message object
         /*
@@ -56,20 +57,22 @@ public class Client {
         Sync sync = new Sync(messenger, in);
 
         // Command handler object
-        Commands commands = new Commands(tasks, users, boards, messenger, sync);
+        Commands commands = new Commands(tasks, users, boards, messenger, sync, authentification);
 
         // Command line input
         Scanner scin = new Scanner(System.in);
 
-        // Authorisation process
-        ClientAuth authentification = new ClientAuth(sync, messenger, scin);
-        authentification.login_request();
+        // Initialise authentification
+        authentification.setSync(sync);
+        authentification.setScan(scin);
+
+        //authentification.loginRequest();
 
         // Main loop
         while (commands.isRunning()) {
             // Handle user input
             if(scin.hasNextLine()){
-                commands.handle(scin.nextLine());
+                commands.handle(scin);
             }
         }
 

@@ -1,0 +1,22 @@
+NOTE: not all the commands work, sadly
+
+quit  -- quit the program
+man   -- print out the manual
+user -- login to server or register a user
+    user login <username>
+    user add <username> <password>
+task  -- commands which interact with tasks
+    task create <name>
+    task info <ID>
+    task complete <ID>
+    task set {title|description|deadline|priority|mastertask} <ID> <string|target ID>
+    task add {board|assignee} <ID> <target ID>
+    task list
+board -- commands which interact with boards
+    board create <ID> <name>
+    board add <task ID> <board ID>
+    board pull <?board ID?>
+    board list
+save  -- saves users, tasks and boards to a local file
+pull  -- pulls tasks, users and boards from server. Only pulls boards that are known to the user.
+         For pulling everything, see 'board pull' variant instead

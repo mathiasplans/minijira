@@ -25,6 +25,7 @@ public class Boards {
      */
     public Boards(TaskContainer tasks){
         this.tasks = tasks;
+        addDefaultBoard();
     }
 
     /**
@@ -38,6 +39,7 @@ public class Boards {
     public Boards(TaskContainer tasks, Path path) throws IOException {
         this.tasks = tasks;
         importBoards(path);
+        addDefaultBoard();
     }
 
     /**
@@ -51,6 +53,15 @@ public class Boards {
     public Boards(TaskContainer tasks, String path) throws IOException {
         this.tasks = tasks;
         importBoards(path);
+        addDefaultBoard();
+    }
+
+    /**
+     * If no boards exist yet, create a default board
+     */
+    private void addDefaultBoard(){
+        if(!boardNames.containsKey(0L))
+            boardNames.put(0L, "default");
     }
 
     /**
@@ -58,7 +69,7 @@ public class Boards {
      * .csv file with first column being the board's ID and second it's name
      * @param path path to the .csv file
      */
-    public void importBoards(String path) throws IOException {
+    private void importBoards(String path) throws IOException {
         /* Fill the list */
         // File/Directory
         File file = new File(path);
@@ -87,7 +98,7 @@ public class Boards {
      * .csv file with first column being the board's ID and second it's name
      * @param path path to the .csv file
      */
-    public void importBoards(Path path) throws IOException {
+    private void importBoards(Path path) throws IOException {
         importBoards(path.toString());
     }
 
@@ -220,7 +231,7 @@ public class Boards {
         return new RawProject(id, rawTasks, boardNames.get(id), "");
     }
 
-    public Set<Long> getKeySet(){
+    public Set<Long> getIDSet(){
         return boardNames.keySet();
     }
 }

@@ -1,6 +1,5 @@
 package client;
 
-import common.Boards;
 import common.Task;
 import data.RawLogin;
 import data.RawProject;
@@ -37,8 +36,10 @@ public class Sync {
         connection.sendMessage(task.getRawTask(), MessageType.UPDATETASK);
 
         // Wait for RESPONSE type message
-        if(waitForResponse() != MessageType.RESPONSE){
+        MessageType responseType = waitForResponse();
+        if(responseType != MessageType.RESPONSE){
             // Handle Error
+            throw new InvalidResponseException("Expected RESPONSE, received " + responseType.name());
         }
     }
 
@@ -53,8 +54,10 @@ public class Sync {
         connection.sendMessage(task.getRawTask(), MessageType.CREATETASK);
 
         // Wait for UPDATETASK type message
-        if(waitForResponse() != MessageType.UPDATETASK){
+        MessageType responseType = waitForResponse();
+        if(responseType != MessageType.UPDATETASK){
             // Handle error
+            throw new InvalidResponseException("Expected UPDATETASK, received " + responseType.name());
         }
     }
 
@@ -69,8 +72,10 @@ public class Sync {
         connection.sendMessage(task.getId(), MessageType.REMOVETASK);
 
         // Wait for RESPONSE type message
-        if(waitForResponse() != MessageType.RESPONSE){
+        MessageType responseType = waitForResponse();
+        if(responseType != MessageType.RESPONSE){
             // Handle error
+            throw new InvalidResponseException("Expected RESPONSE, received " + responseType.name());
         }
     }
 
@@ -85,8 +90,10 @@ public class Sync {
         connection.sendMessage(id, MessageType.GETPROJECT);
 
         // Wait for response and handle it
-        if(waitForResponse() != MessageType.SETPROJECT){
+        MessageType responseType = waitForResponse();
+        if(responseType != MessageType.SETPROJECT){
             // Handle error
+            throw new InvalidResponseException("Expected SETPROJECT, received " + responseType.name());
         }
     }
 
@@ -113,8 +120,10 @@ public class Sync {
         connection.sendMessage(null, MessageType.GETPROJECTLIST);
 
         // Wait for the response
-        if(waitForResponse() != MessageType.SETPROJECTLIST){
+        MessageType responseType = waitForResponse();
+        if(responseType != MessageType.SETPROJECTLIST){
             // Handle error
+            throw new InvalidResponseException("Expected SETPROJECTLIST, received " + responseType.name());
         }
     }
 
@@ -130,8 +139,10 @@ public class Sync {
         connection.sendMessage(new RawProject(id, new RawTask[]{}, name, "URL"), MessageType.SETPROJECT);
 
         // Wait for the response
-        if(waitForResponse() != MessageType.RESPONSE){
+        MessageType responseType = waitForResponse();
+        if(responseType != MessageType.RESPONSE){
             // Handle error
+            throw new InvalidResponseException("Expected RESPONSE, received " + responseType.name());
         }
     }
 

@@ -1,20 +1,23 @@
 package common;
 
 import data.RawTask;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.kohsuke.github.GHBranch;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GitHub;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
  * Class which defines the task
  */
 public class Task {
-    private final Map<GHRepository, List<GHBranch>> gitMap;
+    private final Map<Git, Set<String>> gitMap;
     private final long taskId;
     private boolean isCompleted = false;
     private String title;
@@ -24,11 +27,8 @@ public class Task {
     private long deadlineMS;
     private final long dateCreatedMS;
     private long masterTaskId;
-    private final List<User> assignedEmployees = new ArrayList<>();
-    private final List<Long> boards = new ArrayList<>();
-
-    // GitHub
-    private final GitHub gitHub;
+    private final Set<User> assignedEmployees = new HashSet<>();
+    private final Set<Long> boards = new HashSet<>();
 
     /**
      * Main constructor. Creates a task with given name and ID
@@ -38,8 +38,7 @@ public class Task {
     public Task(long id, String name){
         this.title = name;
         dateCreatedMS = System.currentTimeMillis();
-        gitHub = null;
-        gitMap = new HashMap<GHRepository, List<GHBranch>>();
+        gitMap = new HashMap<>();
         this.taskId = id;
         createdBy = null;
     }
@@ -53,9 +52,8 @@ public class Task {
      * @param deadline deadline of the task, in MS form 1970
      * @param author author of the task
      * @param priority priority of the task
-     * @param gitHub
      */
-    public Task(long id, String name, String description, long board, long deadline, User author, int priority, GitHub gitHub){
+    public Task(long id, String name, String description, long board, long deadline, User author, int priority){
         this.title = name;
         this.description = description;
 
@@ -71,21 +69,17 @@ public class Task {
         deadlineMS = deadline;
 
         // GitHub integration
-        gitMap = new HashMap<GHRepository, List<GHBranch>>();
+        gitMap = new HashMap<>();
 
-        this.gitHub = gitHub;
     }
 
     /**
      * Secondary constructor. Constructs the task from RawTask.
      * @param source RawTask object
-     * @param gitHub
      */
-    public Task(RawTask source, GitHub gitHub){
+    public Task(RawTask source){
         // GitHub integration
-        gitMap = new HashMap<GHRepository, List<GHBranch>>();
-
-        this.gitHub = gitHub;
+        gitMap = new HashMap<>();
 
         if(source != null) {
             createdBy = new User("temp", source.createdBy, new byte[]{}, new byte[]{});
@@ -133,15 +127,17 @@ public class Task {
             out.createdBy = createdBy.getId();
 
         out.assignedEmployees = new long[assignedEmployees.size()];
+        List<User> assigneeList = new ArrayList<>(assignedEmployees);
 
         for (int i = 0; i < out.assignedEmployees.length; i++) {
-            out.assignedEmployees[i] = assignedEmployees.get(i).getId();
+            out.assignedEmployees[i] = assigneeList.get(i).getId();
         }
 
         out.boards = new long[boards.size()];
+        List<Long> boardList = new ArrayList<>(boards);
 
         for (int i = 0; i < out.boards.length; i++) {
-            out.boards[i] = boards.get(i);
+            out.boards[i] = boardList.get(i);
         }
 
         return out;
@@ -186,6 +182,8 @@ public class Task {
         assignedEmployees.remove(assignee);
     }
 
+
+
     /**
      * Create a branch under the task
      * // TODO
@@ -193,9 +191,7 @@ public class Task {
      * @param sourceBranch
      * @throws IOException
      */
-    public void addBranch(String repository, String sourceBranch) throws IOException {
-        GHRepository repo = gitHub.getRepository(repository);
-        GHBranch branch = repo.getBranch(sourceBranch);
+    public void addBranch(String repository, String sourceBranch) throws IOException, GitAPIException {
         // TODO
     }
 
@@ -203,7 +199,7 @@ public class Task {
      * // TODO
      * @return
      */
-    public Map<GHRepository, List<GHBranch>> getGitMap() {
+    public Map<Git, Set<String>> getGitMap() {
         return gitMap;
     }
 
@@ -328,27 +324,19 @@ public class Task {
     }
 
     /**
-     * Method for acquiring the list of the assignees
+     * Method for acquiring the set of the assignees
      * @return list of the assignees of the task
      */
-    public List<User> getAssignedEmployees() {
+    public Set<User> getAssignedEmployees() {
         return assignedEmployees;
     }
 
     /**
-     * Method for getting the List of the boards
+     * Method for getting the set of the boards
      * @return list of the boards where this task belongs
      */
-    public List<Long> getBoards() {
+    public Set<Long> getBoards() {
         return boards;
-    }
-
-    /**
-     * // TODO
-     * @return
-     */
-    public GitHub getGitHub() {
-        return gitHub;
     }
 
     /**
@@ -369,7 +357,8 @@ public class Task {
         for(String line: lines){
             builder.append("| ");
             builder.append(line);
-            builder.append(" |");
+            builder.append(" ".repeat(width - 3 - line.length()));
+            builder.append("|\n");
         }
 
         return new String(builder);

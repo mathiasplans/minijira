@@ -4,13 +4,16 @@ import common.Boards;
 import common.Task;
 import common.TaskContainer;
 import common.UserContainer;
-import messages.MessageType;
 import messages.ProtocolConnection;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 
 /**
@@ -22,6 +25,7 @@ class Commands {
     private final Boards boards;
     private final ProtocolConnection connection;
     private final Sync sync;
+    private final ClientAuth auth;
 
     private boolean running = true;
 
@@ -31,12 +35,13 @@ class Commands {
      * @param userContainer UserContainer object, is filled with users!
      */
     @Contract(pure = true)
-    Commands(TaskContainer taskContainer, UserContainer userContainer, Boards boards, ProtocolConnection connection, Sync sync) {
+    Commands(TaskContainer taskContainer, UserContainer userContainer, Boards boards, ProtocolConnection connection, Sync sync, ClientAuth auth) {
         this.taskContainer = taskContainer;
         this.userContainer = userContainer;
         this.boards = boards;
         this.connection = connection;
         this.sync = sync;
+        this.auth = auth;
     }
 
     /**
@@ -83,8 +88,13 @@ class Commands {
                 break;
 
             case "description":
+                StringBuilder builder = new StringBuilder();
+                for(int i = level + 2; i < tokens.length; i++){
+                    builder.append(tokens[i]);
+                    builder.append(" ");
+                }
                 // task set description <id> <title>
-                subject.setDescription(tokens[level + 2]);
+                subject.setDescription(builder.toString());
                 break;
 
             case "deadline":
@@ -229,10 +239,15 @@ class Commands {
 
     /**
      * Method for printing out the manual of the program
-     * // TODO: manual is empty at the moment
      */
-    private void printManual(){
-        System.out.println("manual");
+    private void printManual() throws IOException {
+        InputStream fin = this.getClass().getClassLoader().getResourceAsStream("manual");
+        if(fin != null){
+            byte[] file = fin.readAllBytes();
+            System.out.println(new String(file, StandardCharsets.UTF_8));
+        }else{
+            throw new FileNotFoundException("Manual not found");
+        }
     }
 
     /**
@@ -243,7 +258,7 @@ class Commands {
     private void boardCommands(@NotNull String[] tokens, int level) throws IOException {
         switch (tokens[level]) {
             case "create":
-                checkArgumentLength("Board", tokens.length, level + 3);
+                checkArgumentLength("Board", tokens.length, level + 2);
                 long createID = Long.parseLong(tokens[level + 1]);
                 String createName = tokens[level + 2];
                 boards.registerBoard(createID, createName);
@@ -251,7 +266,7 @@ class Commands {
                 break;
 
             case "add":
-                checkArgumentLength("Board", tokens.length, level + 3);
+                checkArgumentLength("Board", tokens.length, level + 2);
                 long addTaskID = Long.parseLong(tokens[level + 1]);
                 long addBoardID = Long.parseLong(tokens[level + 2]);
                 Task addTask = taskContainer.getTask(addTaskID);
@@ -265,34 +280,53 @@ class Commands {
                     sync.getBoardTasks(pullID);
                 }else{
                     sync.getBoards();
-                    sync.getTasks(boards.getKeySet());
+                    sync.getTasks(boards.getIDSet());
                 }
                 break;
 
             case "list":
-                Set<Long> boardList = boards.getKeySet();
+                Set<Long> boardList = boards.getIDSet();
                 for(long boardID: boardList){
                     System.out.printf(" %4d %s\n", boardID, boards.getBoardName(boardID));
                 }
                 break;
 
             default:
-                System.out.println("Task: Command does not exist");
+                System.out.println("Board: Command does not exist");
         }
     }
 
+    private void userCommands(@NotNull String[] tokens, int level) throws IOException {
+        switch (tokens[level]) {
+            case "login":
+                checkArgumentLength("User", tokens.length, level + 1);
+                String username = tokens[level + 1];
+                auth.loginRequest(username);
+                break;
+
+            case "add":
+                checkArgumentLength("User", tokens.length, level + 2);
+                String newUserName = tokens[level + 1];
+                String newUserPassword = tokens[level + 2];
+                break;
+
+            default:
+                System.out.println("User: Command does not exist");
+        }
+    }
 
     /**
      * The root of the parser.
-     * @param command command to be parsed (command line input)
+     * @param scin scanner object to parse commands
      * @throws IllegalArgumentException If given command is empty
      * @throws IOException If IO fails
      */
-    void handle(@NotNull String command) throws IOException {
+    void handle(@NotNull Scanner scin) throws IOException {
         /*
          * Command structure
          * [area] [operation] [argument(s)]
          */
+        String command = scin.nextLine();
 
         // If string is empty, ignore
         if(command.isBlank())
@@ -305,9 +339,11 @@ class Commands {
             case "quit":
                 running = false;
                 break;
+
             case "man":
                 printManual();
                 break;
+
             case "task":
                 taskCommands(tokens, 1);
                 break;
@@ -318,10 +354,16 @@ class Commands {
 
             case "save":
                 taskContainer.saveTasks();
+                userContainer.saveUsers();
+                boards.saveBoards();
                 break;
 
             case "pull":
-                sync.getTasks(boards.getKeySet());
+                sync.getTasks(boards.getIDSet());
+                break;
+
+            case "user":
+                userCommands(tokens, 1);
                 break;
 
             default:
