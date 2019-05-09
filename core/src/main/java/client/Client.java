@@ -3,6 +3,7 @@ package client;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Scanner;
 
@@ -31,13 +32,19 @@ public class Client {
             System.out.println("Connected to localhost:" + port);
         else
             System.out.println("Connected to " + address.getHostAddress() + ":" + port);
+
+        // Paths to container saves
+        Path userPath = Path.of("data", "client", "users");
+        Path taskPath = Path.of("data", "client", "tasks");
+        Path boardPath = Path.of("data", "client", "boards");
+
         /*
          * UserContainer and TaskContainer. This is the data the server serves.
          * Both containers hold users and tasks respectively.
          */
-        UserContainer users = new UserContainer(Path.of("data", "client", "users"));
-        TaskContainer tasks = new TaskContainer(Path.of("data", "client", "tasks"));
-        Boards boards = new Boards(tasks, Path.of("data", "client", "boards"));
+        UserContainer users = new UserContainer(userPath);
+        TaskContainer tasks = new TaskContainer(taskPath);
+        Boards boards = new Boards(tasks, boardPath);
 
         ClientAuth authentification = new ClientAuth(); //Empty constructor, fields added later: avoids dependency conflicts
 

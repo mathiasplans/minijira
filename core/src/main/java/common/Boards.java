@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,9 +75,12 @@ public class Boards {
         // File/Directory
         File file = new File(path);
 
+        if(!file.exists())
+            Files.createFile(Paths.get(path));
+
         // Check if file exists and
         // if the File object points at file
-        if(file.exists() && file.isFile()){
+        if(file.isFile()){
             List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
 
             for(String line: lines) {
@@ -85,7 +89,7 @@ public class Boards {
             }
         }
 
-        // If file does not exist or it's not a file
+        // If file is not a file
         else
             throw new IllegalArgumentException("Given path does not point to a file");
 

@@ -25,7 +25,7 @@ class ContainerHelper<ContainerType> {
     void importItems(Path path, Converter<String, ContainerType> converterJSONToItem) throws IOException {
         // Check if file exists
         if(!Files.exists(path))
-            throw new IllegalArgumentException("Given path does not point to neither file nor directory");
+            Files.createFile(path);
 
         // If the File object points at directory
         if (Files.isDirectory(path)){
@@ -59,7 +59,7 @@ class ContainerHelper<ContainerType> {
     void exportItems(Path path, Converter<ContainerType, String> converterItemToJSON) throws IOException {
         // Check if file exists
         if(!Files.exists(path))
-            throw new IllegalArgumentException("Given path does not point to neither file nor directory");
+            Files.createFile(path);
 
         // If the File object points at directory
         if(Files.isDirectory(path)){
