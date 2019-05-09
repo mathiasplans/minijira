@@ -2,6 +2,9 @@ NOTE: not all the commands work, sadly
 
 quit  -- quit the program
 man   -- print out the manual
+user -- login to server or register a user
+    user login <username>
+    user add <username> <password>
 task  -- commands which interact with tasks
     task create <name>
     task info <ID>

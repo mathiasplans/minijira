@@ -1,6 +1,7 @@
 package common;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import data.RawTask;
 import org.jetbrains.annotations.NotNull;
 
@@ -76,8 +77,11 @@ public class TaskContainer {
      */
     private void importTasks(Path path) throws IOException {
         /* Fill the list */
-        container.importItems(path, json -> new Task(gson.fromJson(json, RawTask.class)));
-
+        try{
+            container.importItems(path, json -> new Task(gson.fromJson(json, RawTask.class)));
+        }catch(JsonSyntaxException e){
+            System.out.println("Failed to import tasks");
+        }
         // Set the save path
         inpath = path;
     }

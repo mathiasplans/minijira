@@ -115,6 +115,31 @@ public class ServerMessage implements JiraMessageHandler {
     @Override
     public RawError login(RawLogin rawLogin) {
         // TODO: user auth
+        try{
+            if(rawLogin.password == null){
+                if(users.getUser(rawLogin.username) != null){
+                    connection.sendMessage(new RawLogin("accepted", null), MessageType.LOGIN);
+                }else{
+                    connection.sendMessage(new RawLogin("denied", null), MessageType.LOGIN);
+                }
+            }else{
+                if(users.getUser(rawLogin.username) != null){
+
+                    connection.sendMessage(new RawLogin("accepted", null), MessageType.LOGIN);
+                }else{
+                    connection.sendMessage(new RawLogin("registering", null), MessageType.LOGIN);
+                }
+            }
+        }catch (IOException e){
+            error(e);
+            System.out.println("Failed to send message: " + e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public RawError userInfo(RawUser user) {
+        respnd();
         return null;
     }
 
