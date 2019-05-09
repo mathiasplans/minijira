@@ -133,10 +133,16 @@ public class Task {
             out.assignedEmployees[i] = assigneeList.get(i).getId();
         }
 
-        out.boards = new long[boards.size()];
+        // Size has to be at least 1
+        if(boards.size() == 0) {
+            out.boards = new long[]{-1};
+        }else {
+            out.boards = new long[boards.size()];
+        }
+
         List<Long> boardList = new ArrayList<>(boards);
 
-        for (int i = 0; i < out.boards.length; i++) {
+        for (int i = 0; i < boardList.size(); i++) {
             out.boards[i] = boardList.get(i);
         }
 

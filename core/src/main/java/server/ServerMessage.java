@@ -137,11 +137,11 @@ public class ServerMessage implements JiraMessageHandler {
         return null;
     }
 
-    @Override
-    public RawError userInfo(RawUser user) {
-        respnd();
-        return null;
-    }
+//    @Override
+//    public RawError userInfo(RawUser user) {
+//        respnd();
+//        return null;
+//    }
 
     @Override
     public RawError getProjectList() {

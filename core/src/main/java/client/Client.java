@@ -68,6 +68,9 @@ public class Client {
 
         //authentification.loginRequest();
 
+        // Quick intro
+        System.out.println("Minijira 1.0\nUse 'man' for manual");
+
         // Main loop
         while (commands.isRunning()) {
             // Handle user input

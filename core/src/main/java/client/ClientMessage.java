@@ -60,10 +60,10 @@ public class ClientMessage implements JiraMessageHandler {
         return null;
     }
 
-    @Override
-    public RawError userInfo(RawUser user) {
-        return null;
-    }
+//    @Override
+//    public RawError userInfo(RawUser user) {
+//        return null;
+//    }
 
     @Override
     public RawError getProjectList() {

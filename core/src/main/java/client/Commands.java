@@ -52,9 +52,14 @@ class Commands {
         return running;
     }
 
-    private boolean checkArgumentLength(String scope, int length, int max){
-        if(length < max + 1){
+    private boolean checkArgumentLength(String scope, int length, int trueLength){
+        if(length < trueLength){
             System.out.println(scope + ": Not enough arguments");
+            return true;
+        }
+
+        if(length > trueLength){
+            System.out.println(scope + ": Too many arguments");
             return true;
         }
 
@@ -68,7 +73,7 @@ class Commands {
      * @exception IOException If communication with server fails
      */
     private void taskSet(@NotNull String[] tokens, int level) throws IOException {
-        if(checkArgumentLength("Task Set", tokens.length, level + 2))
+        if(checkArgumentLength("Task Set", tokens.length, level + 3))
             return;
 
         // Get the task
@@ -129,7 +134,7 @@ class Commands {
      * @exception IOException If communication with server fails
      */
     private void taskAdd(@NotNull String[] tokens, int level) throws IOException {
-        if(checkArgumentLength("Task Add", tokens.length, level + 2))
+        if(checkArgumentLength("Task Add", tokens.length, level + 3))
             return;
 
         // Get the task
@@ -137,7 +142,7 @@ class Commands {
 
         // Check whether the task exists
         if(subject == null){
-            System.out.println("Task with given ID does not exist");
+            System.out.println("Task Add: Task with given ID does not exist");
             return;
         }
 
@@ -176,7 +181,7 @@ class Commands {
         }
 
         /* commands with arguments */
-        if(checkArgumentLength("Task", tokens.length, level + 1))
+        if(checkArgumentLength("Task", tokens.length, level + 2))
             return;
 
         // Update the task which is queried
@@ -258,7 +263,8 @@ class Commands {
     private void boardCommands(@NotNull String[] tokens, int level) throws IOException {
         switch (tokens[level]) {
             case "create":
-                checkArgumentLength("Board", tokens.length, level + 2);
+                if(checkArgumentLength("Board", tokens.length, level + 3))
+                    return;
                 long createID = Long.parseLong(tokens[level + 1]);
                 String createName = tokens[level + 2];
                 boards.registerBoard(createID, createName);
@@ -266,7 +272,8 @@ class Commands {
                 break;
 
             case "add":
-                checkArgumentLength("Board", tokens.length, level + 2);
+                if(checkArgumentLength("Board", tokens.length, level + 3))
+                    return;
                 long addTaskID = Long.parseLong(tokens[level + 1]);
                 long addBoardID = Long.parseLong(tokens[level + 2]);
                 Task addTask = taskContainer.getTask(addTaskID);
@@ -299,13 +306,13 @@ class Commands {
     private void userCommands(@NotNull String[] tokens, int level) throws IOException {
         switch (tokens[level]) {
             case "login":
-                checkArgumentLength("User", tokens.length, level + 1);
+                checkArgumentLength("User", tokens.length, level + 2);
                 String username = tokens[level + 1];
                 auth.loginRequest(username);
                 break;
 
             case "add":
-                checkArgumentLength("User", tokens.length, level + 2);
+                checkArgumentLength("User", tokens.length, level + 3);
                 String newUserName = tokens[level + 1];
                 String newUserPassword = tokens[level + 2];
                 break;
