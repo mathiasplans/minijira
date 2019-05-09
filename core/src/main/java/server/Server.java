@@ -45,7 +45,7 @@ public class Server implements Runnable {
 
             /*
              * ProtocolConnection object. Handles the messages.
-             * Server has to call readMessage when message is available
+             * Server has to convert readMessage when message is available
              */
             ProtocolConnection messenger = new ProtocolConnection(null, out, in, handler);
 
