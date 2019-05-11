@@ -6,7 +6,6 @@ import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.dfs.DfsRepositoryDescription;
 import org.eclipse.jgit.internal.storage.dfs.InMemoryRepository;
-import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.RefSpec;
 
 import java.io.IOException;
@@ -25,21 +24,10 @@ public class RepoContainer {
         return git;
     }
 
-    private Git createRepository(String repository) {
-//        String repoName = repository.split("/")[repository.split("/").length - 1].split(".")[0];
-//        File gitFile = new File(Paths.get("repositories", "repoName", ".git").toString());
-//        Git out;
-//        if(gitFile.exists()){
-//            FileRepositoryBuilder builder = new FileRepositoryBuilder();
-//            return out = new Git(builder.setGitDir(gitFile).readEnvironment().findGitDir().setMustExist(true).build());
-//        }else{
-//            return out = Git.cloneRepository().setURI(repository).setDirectory(gitFile.getParentFile()).setCloneAllBranches(true).call();
-//        }
-        return new Git(new InMemoryRepository(new DfsRepositoryDescription()));
-    }
-
-    public void addRepo(String repositroyURL){
-        repositories.put(repositroyURL,createRepository(repositroyURL));
+    private Git initiateRepository(String repository) {
+        Git git = new Git(new InMemoryRepository(new DfsRepositoryDescription()));
+        repositories.put(repository, git);
+        return git;
     }
 
     public void addBranch(String repositoryURL, String branchName, String source) throws GitAPIException {
@@ -59,5 +47,18 @@ public class RepoContainer {
         push.setRemote(repositoryURL);
         push.setRefSpecs(new RefSpec(branchName + ":" + branchName));
         push.call();
+    }
+
+    /**
+     * https://stackoverflow.com/questions/45587631/how-to-checkout-a-remote-branch-without-knowing-if-it-exists-locally-in-jgit
+     * @param repositoryURL
+     * @param branchName
+     * @return
+     * @throws GitAPIException
+     * @throws IOException
+     */
+    public boolean hasMerged(String repositoryURL, String branchName) throws GitAPIException, IOException {
+        Git git = updateRepo(repositoryURL);
+        return git.getRepository().exactRef("refs/heads/" + branchName) != null;
     }
 }

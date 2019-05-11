@@ -1,10 +1,8 @@
 package common;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 class ContainerHelper<ContainerType> {
@@ -27,14 +25,14 @@ class ContainerHelper<ContainerType> {
     void importItems(Path path, Converter<String, ContainerType> converterJSONToItem) throws IOException {
         // Check if file exists
         if(!Files.exists(path))
-            throw new IllegalArgumentException("Given path does not point to neither file nor directory");
+            Files.createFile(path);
 
         // If the File object points at directory
         if (Files.isDirectory(path)){
             try (var files = Files.walk(path)){
                 files.filter(Files::isRegularFile).forEach((p) -> {
                     try {
-                        container.add(converterJSONToItem.call(Files.readString(p)));
+                        container.add(converterJSONToItem.convert(Files.readString(p)));
                     }catch (IOException e){
                         throw new RuntimeException(e);
                     }
@@ -47,7 +45,7 @@ class ContainerHelper<ContainerType> {
             List<String> lines = Files.readAllLines(path);
             for(String line: lines){
                 if(!line.isBlank())
-                    container.add(converterJSONToItem.call(line));
+                    container.add(converterJSONToItem.convert(line));
             }
         }
     }
@@ -61,14 +59,14 @@ class ContainerHelper<ContainerType> {
     void exportItems(Path path, Converter<ContainerType, String> converterItemToJSON) throws IOException {
         // Check if file exists
         if(!Files.exists(path))
-            throw new IllegalArgumentException("Given path does not point to neither file nor directory");
+            Files.createFile(path);
 
         // If the File object points at directory
         if(Files.isDirectory(path)){
             for (ContainerType item: container) {
                 Files.writeString(
                         path.resolve(String.valueOf(item.hashCode())),
-                        converterItemToJSON.call(item)
+                        converterItemToJSON.convert(item)
                 );
             }
         }
@@ -77,7 +75,7 @@ class ContainerHelper<ContainerType> {
         else if(Files.isRegularFile(path)){
             StringBuilder builder = new StringBuilder();
             for(ContainerType item: container){
-                builder.append(converterItemToJSON.call(item));
+                builder.append(converterItemToJSON.convert(item));
                 builder.append("\n");
             }
 
