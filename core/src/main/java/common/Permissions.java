@@ -4,11 +4,13 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import java.security.Permission;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Enum of all the permissions in minijira
  */
-public enum Permissions {
+public enum Permissions/* implements Comparable<Permissions>*/{
     /**
      * Users with NORIGTH permission have no rights to do anything
      */
@@ -37,6 +39,7 @@ public enum Permissions {
     ALL(4);
 
     private final int index;
+    private static Map map = new HashMap();
 
     /**
      * Default constructor. Initializes index
@@ -44,6 +47,12 @@ public enum Permissions {
      */
     Permissions(int index){
         this.index = index;
+    }
+
+    static {
+        for(Permissions permission:Permissions.values()){
+            map.put(permission.index, permission);
+        }
     }
 
     /**
@@ -68,5 +77,18 @@ public enum Permissions {
 
         return NORIGHT;
     }
+
+
+    public static Permissions valueOf(int i){
+        return (Permissions) map.get(i);
+    }
+
+    /*public static int getValue(Permissions permission){
+        return index;
+    }*/
+
+    /*int compareTo(Permissions permission){
+        return index - permission.getIndex();
+    }*/
 
 }

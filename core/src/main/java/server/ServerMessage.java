@@ -1,9 +1,6 @@
 package server;
 
-import common.Boards;
-import common.Task;
-import common.TaskContainer;
-import common.UserContainer;
+import common.*;
 import data.*;
 import messages.JiraMessageHandler;
 import messages.MessageType;
@@ -12,6 +9,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 public class ServerMessage implements JiraMessageHandler {
     private final TaskContainer tasks;
@@ -19,6 +18,8 @@ public class ServerMessage implements JiraMessageHandler {
     private final Boards boards;
     private final Order orderer;
     private ProtocolConnection connection;
+    private User currentUser;
+    private User potentialUser;
 
     /**
      * Main constructor. Initializes task and user containers
@@ -26,11 +27,12 @@ public class ServerMessage implements JiraMessageHandler {
      * @param users
      */
     @Contract(pure = true)
-    public ServerMessage(TaskContainer tasks, UserContainer users, Boards boards, Order orderer) {
+    public ServerMessage(TaskContainer tasks, UserContainer users, Boards boards, Order orderer, User currentUser) {
         this.tasks = tasks;
         this.users = users;
         this.boards = boards;
         this.orderer = orderer;
+        this.currentUser = currentUser;
     }
 
     public void setConnection(ProtocolConnection connection){
@@ -113,21 +115,62 @@ public class ServerMessage implements JiraMessageHandler {
     }
 
     @Override
-    public RawError login(RawLogin rawLogin) {
-        // TODO: user auth
+    public RawError login(RawLogin rawLogin){
         try{
-            if(rawLogin.password == null){
-                if(users.getUser(rawLogin.username) != null){
-                    connection.sendMessage(new RawLogin("accepted", null), MessageType.LOGIN);
-                }else{
-                    connection.sendMessage(new RawLogin("denied", null), MessageType.LOGIN);
-                }
-            }else{
-                if(users.getUser(rawLogin.username) != null){
+            if(rawLogin.username == null){
 
-                    connection.sendMessage(new RawLogin("accepted", null), MessageType.LOGIN);
+                if(rawLogin.password == null){
+                    // null, null - cancel login/registration request / logout
+                    if(currentUser.equals(users.getUser("nouser"))){
+                        potentialUser = null;
+                        connection.sendMessage(new RawLogin("cancelled", null), MessageType.LOGIN);
+                    }else{
+                        currentUser = users.getUser("nouser");
+                        potentialUser = null;
+                        connection.sendMessage(new RawLogin("logged out", null), MessageType.LOGIN);
+                    }
+
                 }else{
-                    connection.sendMessage(new RawLogin("registering", null), MessageType.LOGIN);
+                    // null, password - attempts to log in as user previuosly sent via username, null
+                    try{
+                        if(ServerAuth.logUserIn(potentialUser.getName(), rawLogin.password, users)){
+                            currentUser = potentialUser;
+                            potentialUser = null;
+                            connection.sendMessage(new RawLogin("logged in", null), MessageType.LOGIN);
+                        }else{
+                            potentialUser = null;
+                            connection.sendMessage(new RawLogin("wrong password", null), MessageType.LOGIN);
+                        }
+                    }catch(NoSuchAlgorithmException | InvalidKeySpecException e){
+                        error(e);
+                        System.out.println("Failed to log user in: " + e.getMessage());
+                    }
+                }
+
+            }else{
+
+                if(rawLogin.password == null){
+                    // username, null - checks if user exists on the server
+                    potentialUser = users.getUser(rawLogin.username);
+                    if(potentialUser != null){
+                        connection.sendMessage(new RawLogin("exists", null), MessageType.LOGIN);
+                    }else{
+                        connection.sendMessage(new RawLogin("does not exist", null), MessageType.LOGIN);
+                    }
+
+                }else{
+                    // username, password - initiates registration procedure
+                    if(users.getUser(rawLogin.username) == null){
+                        try{
+                            currentUser = ServerAuth.registerUser(rawLogin.username, rawLogin.password, users);
+                            connection.sendMessage(new RawLogin("registered", null), MessageType.LOGIN);
+                        }catch(NoSuchAlgorithmException | InvalidKeySpecException e){
+                            error(e);
+                            System.out.println("Failed to register user: " + e.getMessage());
+                        }
+                    }else{
+                        connection.sendMessage(new RawLogin("already exists", null), MessageType.LOGIN);
+                    }
                 }
             }
         }catch (IOException e){
@@ -137,11 +180,12 @@ public class ServerMessage implements JiraMessageHandler {
         return null;
     }
 
-//    @Override
-//    public RawError userInfo(RawUser user) {
-//        respnd();
-//        return null;
-//    }
+    @Override
+    public RawError userInfo(RawUser user) {
+        ServerAuth.addUserData(currentUser, user, users);
+        respnd();
+        return null;
+    }
 
     @Override
     public RawError getProjectList() {

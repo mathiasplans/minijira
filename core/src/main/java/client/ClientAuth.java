@@ -8,46 +8,140 @@ import java.util.Scanner;
 
 public class ClientAuth{
     private Sync sync;
-    private Scanner scan;
     private String username;
+    private String password;
+    private int state; /** state: 0 = idle, 1 = logging in, 2 = registering, 3 = logged in **/
 
-    public ClientAuth(Sync sync, Scanner scan){
+    public ClientAuth(Sync sync){
         this.sync = sync;
-        this.scan = scan;
+        this.state = 0;
     }
 
     public ClientAuth(){
     }
 
-    public boolean loginRequest(String username){
-       //System.out.println("Login required, please enter your username: ");
-       //username = scan.nextLine();
+    /**
+     * Checks if user exists on the server
+     * [username, null]
+    **/
+    public void userExistsRequest(String username){
         this.username = username;
         try{
             sync.login(username, null);
+            state = 1;
         }catch(IOException e){
-            System.out.println("Login failed: " + e.getMessage());
+            System.out.println("Request failed: " + e.getMessage());
         }
-        return true;
     }
 
-    public boolean passwordRequest(boolean accepted) {
-        if (accepted){
-            System.out.println("User exists, please enter your password: ");
-            //String password = scan.nextLine();
-            //sync.login(username, password);
+    public void doesNotExist(){
+        System.out.println("User \"" + username + "\" does not exist on this server");
+        state = 0;
+        this.username = null;
+        this.password = null;
+    }
+
+    /**
+     * Attempts to log in as user previuosly sent via userExistsRequest
+     * [null, password]
+     **/
+    public void loginRequest(String username, String password){
+        this.password = password;
+        if(this.username.equals(username)){
+            try{
+                sync.login(null, password);
+              }catch(IOException e){
+                 System.out.println("Login failed: " + e.getMessage());
+             }
         }else{
-            System.out.println("Username does not exist on this server.");
-            System.out.println();
+            userExistsRequest(username);
         }
-        return true;
+    }
+
+    public void loginRequest(){
+        if(state == 1){
+            try{
+                sync.login(null, password);
+            }catch(IOException e){
+                System.out.println("Login failed: " + e.getMessage());
+            }
+        }else{
+            System.out.println("Unexpected reply from server");
+        }
+    }
+
+    public void loginConfirmed(){
+        System.out.println("Successfully logged in. Welcome, " + username + "!");
+        state = 3;
+        this.password = null;
+    }
+
+    public void wrongPassword(){
+        System.out.println("Wrong password for user " + username + "; try logging in again");
+        state = 0;
+        this.username = null;
+        this.password = null;
+    }
+
+    /**
+     * Initiates registration procedure
+     * [username, password]
+     **/
+    public void registerRequest(String username, String password){
+        this.username = username;
+        this.password = password;
+        try{
+            sync.login(username, password);
+            state = 2;
+        }catch(IOException e){
+            System.out.println("Registration failed: " + e.getMessage());
+        }
+    }
+
+    public void registrationSuccessful(){
+        System.out.println("You have been registered successfully. Welcome, " + username + "!");
+        state = 3;
+        this.password = null;
+    }
+
+    public void alreadyExists(){
+        System.out.println("Cannot register, user named \"" + username + "\" already exists.");
+        state = 0;
+        this.username = null;
+        this.password = null;
+    }
+
+    /**
+     * Cancels login/registration request (erases stored username value, ready for next attempt; also logout)
+     * [null, null]
+     **/
+    public void logoutRequest(){
+        try{
+            sync.login(null, null);
+        }catch(IOException e){
+            System.out.println("Logout failed: " + e.getMessage());
+        }
+    }
+
+    public void loginCancelled(){
+        System.out.println("Login procedure cancelled");
+        state = 0;
+        this.username = null;
+        this.password = null;
+    }
+
+    public void loggedOut(){
+        System.out.println("User " + username + " successfully logged out!");
+        state = 0;
+        this.username = null;
+        this.password = null;
+    }
+
+    public int getState(){
+        return state;
     }
 
     public void setSync(Sync sync){
         this.sync = sync;
-    }
-
-    public void setScan(Scanner scan){
-        this.scan = scan;
     }
 }

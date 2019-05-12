@@ -25,10 +25,18 @@ public class UserContainer {
     private final ContainerHelper<User> container;
 
     /**
+     * Adds the default user with no permissions, automatically logged in when client connects
+     */
+    private void createDefaultUser(){
+        addUser(new User(new RawUser(0, "nouser", null, "", 0L, new long[]{}, new int[]{}, new long[]{})));
+    }
+
+    /**
      * Default constructor. Initializes the array of users.
      */
     public UserContainer(){
         users = new ArrayList<>();
+        createDefaultUser();
         container = new ContainerHelper<>(users);
     }
 
@@ -39,6 +47,7 @@ public class UserContainer {
      */
     public UserContainer(List<User> users){
         this.users = users;
+        createDefaultUser();
         container = new ContainerHelper<>(users);
     }
 
@@ -50,6 +59,7 @@ public class UserContainer {
      */
     public UserContainer(String path) throws IOException {
         users = new ArrayList<>();
+        createDefaultUser();
         container = new ContainerHelper<>(users);
         importUsers(path);
     }
@@ -62,6 +72,7 @@ public class UserContainer {
      */
     public UserContainer(@NotNull Path path) throws IOException {
         users = new ArrayList<>();
+        createDefaultUser();
         container = new ContainerHelper<>(users);
         importUsers(path);
     }
@@ -187,7 +198,6 @@ public class UserContainer {
             if(user.getId() == id)
                 return user;
         }
-
         return null;
     }
 
@@ -201,7 +211,6 @@ public class UserContainer {
             if(user.getName().equals(name))
                 return user;
         }
-
         return null;
     }
 }

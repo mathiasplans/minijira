@@ -52,18 +52,50 @@ public class ClientMessage implements JiraMessageHandler {
 
     @Override
     public RawError login(RawLogin rawLogin) {
-        if(rawLogin.username == "accepted"){
-            auth.passwordRequest(true);
-        }else if(rawLogin.username == "denied"){
-            auth.passwordRequest(false);
+        switch(rawLogin.username){
+            case "exists":
+                auth.loginRequest();
+            break;
+
+            case "does not exist":
+                auth.doesNotExist();
+            break;
+
+            case "logged in":
+                auth.loginConfirmed();
+            break;
+
+            case "wrong password":
+                auth.wrongPassword();
+            break;
+
+            case "cancelled":
+                auth.loginCancelled();
+            break;
+
+            case "logged out":
+                auth.loggedOut();
+            break;
+
+            case "registered":
+                auth.registrationSuccessful();
+            break;
+
+            case "already exists":
+                auth.alreadyExists();
+            break;
+
+            default:
+                throw new InvalidResponseException("Unknown LOGIN message recieved from Server");
         }
+
         return null;
     }
 
-//    @Override
-//    public RawError userInfo(RawUser user) {
-//        return null;
-//    }
+    @Override
+    public RawError userInfo(RawUser user) {
+        return null;
+    }
 
     @Override
     public RawError getProjectList() {

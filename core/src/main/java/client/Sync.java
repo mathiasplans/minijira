@@ -1,9 +1,11 @@
 package client;
 
+import common.Permissions;
 import common.Task;
 import data.RawLogin;
 import data.RawProject;
 import data.RawTask;
+import data.RawUser;
 import messages.MessageType;
 import messages.ProtocolConnection;
 import org.jetbrains.annotations.NotNull;
@@ -157,10 +159,70 @@ public class Sync {
         // Send the request
         connection.sendMessage(new RawLogin(username, password), MessageType.LOGIN);
 
-        // Wait for the response TODO: correct response
-        //if(waitForResponse() != MessageType.RESPONSE){
-        if(waitForResponse() != MessageType.LOGIN){
-            // Handle error
+        // Wait for the response
+        MessageType responseType = waitForResponse();
+        if(responseType != MessageType.LOGIN){
+            throw new InvalidResponseException("Expected LOGIN, received " + responseType.name());
         }
     }
+
+    public void addEmail(String email) throws IOException {
+        RawUser rawUser = new RawUser(
+                0,
+                null,
+                null,
+                email,
+                null,
+                null,
+                null,
+                null
+        );
+
+        connection.sendMessage(rawUser, MessageType.USERINFO);
+        // Wait for the response
+        MessageType responseType = waitForResponse();
+        if(responseType != MessageType.RESPONSE){
+            throw new InvalidResponseException("Expected RESPONSE, received " + responseType.name());
+        }
+    }
+
+    public void setProjectPermission(long projectID, Permissions permission, String username) throws IOException {
+        RawUser rawUser = new RawUser(
+                0,
+                username,
+                null,
+                null,
+                null,
+                new long[]{projectID},
+                new int[]{permission.getIndex()},
+                null
+        );
+
+        connection.sendMessage(rawUser, MessageType.USERINFO);
+        // Wait for the response
+        MessageType responseType = waitForResponse();
+        if(responseType != MessageType.RESPONSE){
+            throw new InvalidResponseException("Expected RESPONSE, received " + responseType.name());
+        }
+    }
+    /*
+    public void addFriend(String friendUsername) throws IOException {
+        RawUser rawUser = new RawUser(
+                0,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                new long[]{1}
+        );
+
+        connection.sendMessage(rawUser, MessageType.USERINFO);
+        // Wait for the response
+        MessageType responseType = waitForResponse();
+        if(responseType != MessageType.RESPONSE){
+            throw new InvalidResponseException("Expected RESPONSE, received " + responseType.name());
+        }
+    }*/
 }

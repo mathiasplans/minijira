@@ -3,6 +3,7 @@ package common;
 import data.RawUser;
 import org.jetbrains.annotations.NotNull;
 
+import java.security.Permission;
 import java.util.*;
 
 /**
@@ -86,6 +87,24 @@ public class User {
         return out;
     }
 
+    public boolean hasRights(long project, Permissions level){
+        return (permissions.get(project).compareTo(level) >= 0);
+    }
+
+    public void setProjectRights(long projectID, Permissions level){
+        if(permissions.containsKey(projectID)){
+            permissions.replace(projectID, level);
+        }else{
+            permissions.put(projectID, level);
+        }
+    }
+
+    public void addFriend(long userID){
+        if(!friends.contains(userID)){
+            friends.add(userID);
+        }
+    }
+
     /**
      * Get the name of the user
      * @return name of the user
@@ -100,6 +119,31 @@ public class User {
      */
     public long getId() {
         return id;
+    }
+
+    /**
+     * Get the stored password hash and salt of the user
+     * @return password hash and salt of the user
+     */
+    public byte[] getHashAndSalt() {
+        byte[] output =  Arrays.copyOf(hash, 64);
+        System.arraycopy(salt, 0, output, 32, 32);
+
+        return output;
+    }
+
+    /**
+     * Set the time of last login to current time
+     */
+    public void setLastOnline() {
+        lastOnline = System.currentTimeMillis();
+    }
+
+    /**
+     * Set the user's email
+     */
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     /**

@@ -4,7 +4,18 @@ quit  -- quit the program
 man   -- print out the manual
 user -- login to server or register a user
     user login <username>
-    user add <username> <password>
+    user register <username> <password>
+    user setEmail <email>
+    /*TODO
+    user getEmail
+
+    user addFriend <username>
+    user removeFriend <username>
+    user listFriends
+
+    user getPermissions <user[optional]>
+    user setPermissions <user> <projectID> <permissions> - permissions = noright, see, create, complete, all
+    */
 task  -- commands which interact with tasks
     task create <name>
     task info <ID>

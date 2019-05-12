@@ -1,9 +1,6 @@
 package client;
 
-import common.Boards;
-import common.Task;
-import common.TaskContainer;
-import common.UserContainer;
+import common.*;
 import messages.ProtocolConnection;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -12,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
@@ -306,15 +304,49 @@ class Commands {
     private void userCommands(@NotNull String[] tokens, int level) throws IOException {
         switch (tokens[level]) {
             case "login":
-                checkArgumentLength("User", tokens.length, level + 2);
+                checkArgumentLength("User", tokens.length, level + 3);
                 String username = tokens[level + 1];
-                auth.loginRequest(username);
+                String password = tokens[level + 2];
+                auth.loginRequest(username, password);
                 break;
 
-            case "add":
+            case "register":
                 checkArgumentLength("User", tokens.length, level + 3);
                 String newUserName = tokens[level + 1];
                 String newUserPassword = tokens[level + 2];
+                auth.registerRequest(newUserName, newUserPassword);
+                break;
+
+            case "setEmail":
+                checkArgumentLength("User", tokens.length, level+2);
+                String email = tokens[level + 1];
+                sync.addEmail(email);
+                break;
+
+            case "setPermissions":
+                checkArgumentLength("User", tokens.length, level+4);
+                String affectedUserName = tokens[level + 2];
+                long projectID = Long.parseLong(tokens[level + 3]);
+                Permissions permission = Permissions.NORIGHT;
+
+                switch(tokens[level + 4]){
+                    case "noright":
+                        permission = Permissions.NORIGHT;
+                        break;
+                    case "see":
+                        permission = Permissions.SEE;
+                        break;
+                    case "create":
+                        permission = Permissions.CREATE;
+                        break;
+                    case "complete":
+                        permission = Permissions.COMPLETE;
+                        break;
+                    case "all":
+                        permission = Permissions.ALL;
+                        break;
+                }
+                sync.setProjectPermission(projectID, permission, affectedUserName);
                 break;
 
             default:

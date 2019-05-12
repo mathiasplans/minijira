@@ -46,7 +46,8 @@ public class Client {
         TaskContainer tasks = new TaskContainer(taskPath);
         Boards boards = new Boards(tasks, boardPath);
 
-        ClientAuth authentification = new ClientAuth(); //Empty constructor, fields added later: avoids dependency conflicts
+        ClientAuth authentification = new ClientAuth(); //Empty constructor, fields added later
+                                                        //to avoid dependency conflicts with ClientMessage
 
         // Message object
         /*
@@ -71,7 +72,6 @@ public class Client {
 
         // Initialise authentification
         authentification.setSync(sync);
-        authentification.setScan(scin);
 
         //authentification.loginRequest();
 

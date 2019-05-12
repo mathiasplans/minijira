@@ -8,6 +8,7 @@ import java.nio.file.Path;
 
 import common.Boards;
 import common.TaskContainer;
+import common.User;
 import common.UserContainer;
 import messages.*;
 import org.jetbrains.annotations.Contract;
@@ -37,11 +38,13 @@ public class    Server implements Runnable {
             // Report success
             System.out.println("client connected, waiting for data");
 
+            User currentUser = users.getUser("nouser");
+
             // Message object
             /*
              * ServerMessage object. Implementation of handling of incoming messages from a client
              */
-            ServerMessage handler = new ServerMessage(tasks, users, boards, orderer);
+            ServerMessage handler = new ServerMessage(tasks, users, boards, orderer, currentUser);
 
             /*
              * ProtocolConnection object. Handles the messages.
