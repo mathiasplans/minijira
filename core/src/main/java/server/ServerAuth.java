@@ -78,7 +78,7 @@ public class ServerAuth{
 
         if(data.projectRights != null){
             for(int projectIndex = 0; projectIndex < data.projectRights.length; projectIndex++){
-                if(currentUser.hasRights(projectIndex, Permissions.ALL)){
+                if(currentUser != null && currentUser.hasRights(projectIndex, Permissions.ALL)){
                     affected.setProjectRights(data.projects[projectIndex], Permissions.valueOf(data.projectRights[projectIndex]));
                 }else{
                     throw new NoPermissionException("Don't have the rights to change permissions for project " + data.projects[projectIndex]);

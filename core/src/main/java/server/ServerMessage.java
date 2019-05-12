@@ -121,11 +121,11 @@ public class ServerMessage implements JiraMessageHandler {
 
                 if(rawLogin.password == null){
                     // null, null - cancel login/registration request / logout
-                    if(currentUser.equals(users.getUser("nouser"))){
+                    if(currentUser == null){
                         potentialUser = null;
                         connection.sendMessage(new RawLogin("cancelled", null), MessageType.LOGIN);
                     }else{
-                        currentUser = users.getUser("nouser");
+                        currentUser = null;
                         potentialUser = null;
                         connection.sendMessage(new RawLogin("logged out", null), MessageType.LOGIN);
                     }

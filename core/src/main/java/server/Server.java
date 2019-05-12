@@ -38,7 +38,7 @@ public class    Server implements Runnable {
             // Report success
             System.out.println("client connected, waiting for data");
 
-            User currentUser = users.getUser("nouser");
+            User currentUser = null;
 
             // Message object
             /*

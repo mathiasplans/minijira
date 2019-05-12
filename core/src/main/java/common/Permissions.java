@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import java.security.Permission;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +40,7 @@ public enum Permissions/* implements Comparable<Permissions>*/{
     ALL(4);
 
     private final int index;
-    private static Map map = new HashMap();
+    //private static Map map = new HashMap();
 
     /**
      * Default constructor. Initializes index
@@ -49,11 +50,15 @@ public enum Permissions/* implements Comparable<Permissions>*/{
         this.index = index;
     }
 
-    static {
-        for(Permissions permission:Permissions.values()){
+    static Map<Integer, Permissions> buildPermissionMap(){
+        for(common.Permissions permission: common.Permissions.values()){
             map.put(permission.index, permission);
         }
+        return  map;
     }
+
+    private static final Map<Integer, Permissions> map = Collections.unmodifiableMap(buildPermissionMap());
+
 
     /**
      * Gets the index of the enum
