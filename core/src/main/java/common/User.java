@@ -39,8 +39,13 @@ public class User {
         name = user.username;
         email = user.userEmail;
         id = user.userId;
-        hash = user.passwordHash;
-        salt = null;
+
+        byte[] newHash = new byte[32];
+        System.arraycopy(user.passwordHash, 0, newHash, 0, 32);
+        byte[] newSalt = new byte[32];
+        System.arraycopy(user.passwordHash, 32, newSalt, 0, 32);
+        hash = newHash;
+        salt = newSalt;
 
         // Fill the projects and permissions
         for(int i = 0; i < user.projectRights.length; i++){
@@ -57,7 +62,7 @@ public class User {
         RawUser out = new RawUser(
                 id,
                 name,
-                hash,
+                getHashAndSalt(),
                 email,
                 lastOnline,
                 null,

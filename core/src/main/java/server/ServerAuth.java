@@ -7,6 +7,7 @@ import data.RawUser;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
@@ -40,6 +41,12 @@ public class ServerAuth{
     public static User registerUser(String username, String password, UserContainer userContainer) throws NoSuchAlgorithmException, InvalidKeySpecException{
         byte[] salt = generateSalt();
         userContainer.newUser(username, generateHash(password, salt), salt);
+        try{
+            userContainer.saveUsers();
+        }catch(IOException e){
+            System.out.println("Thread failed: " + Thread.currentThread().getId());
+            throw new RuntimeException(e);
+        }
         return userContainer.getUser(username);
     }
 
@@ -48,7 +55,7 @@ public class ServerAuth{
         byte[] hash = new byte[32];
         System.arraycopy(user.getHashAndSalt(), 0, hash, 0, 32);
         byte[] salt = new byte[32];
-        System.arraycopy(user.getHashAndSalt(), 33, salt, 0, 32);
+        System.arraycopy(user.getHashAndSalt(), 32, salt, 0, 32);
         if(verifyPassword(password, salt, hash)){
             user.setLastOnline();
             return true;

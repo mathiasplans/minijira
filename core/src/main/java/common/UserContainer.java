@@ -121,7 +121,7 @@ public class UserContainer {
      * @throws IOException If file IO fails
      */
     public void saveUsers(Path path) throws IOException {
-        container.exportItems(path, user -> gson.toJson(user, RawUser.class));
+        container.exportItems(path, user -> gson.toJson(user.getRawUser()));
     }
 
     /**

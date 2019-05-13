@@ -51,6 +51,7 @@ public enum Permissions/* implements Comparable<Permissions>*/{
     }
 
     static Map<Integer, Permissions> buildPermissionMap(){
+        Map<Integer, Permissions> map = new HashMap<>();
         for(common.Permissions permission: common.Permissions.values()){
             map.put(permission.index, permission);
         }

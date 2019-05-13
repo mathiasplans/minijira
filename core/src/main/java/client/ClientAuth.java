@@ -27,8 +27,8 @@ public class ClientAuth{
     public void userExistsRequest(String username){
         this.username = username;
         try{
-            sync.login(username, null);
             state = 1;
+            sync.login(username, null);
         }catch(IOException e){
             System.out.println("Request failed: " + e.getMessage());
         }
@@ -47,7 +47,7 @@ public class ClientAuth{
      **/
     public void loginRequest(String username, String password){
         this.password = password;
-        if(this.username.equals(username)){
+        if(this.username != null && this.username.equals(username)){
             try{
                 sync.login(null, password);
               }catch(IOException e){
@@ -64,6 +64,7 @@ public class ClientAuth{
                 sync.login(null, password);
             }catch(IOException e){
                 System.out.println("Login failed: " + e.getMessage());
+                e.printStackTrace();
             }
         }else{
             System.out.println("Unexpected reply from server");

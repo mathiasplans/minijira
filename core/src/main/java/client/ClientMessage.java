@@ -6,6 +6,8 @@ import common.UserContainer;
 import data.*;
 import messages.JiraMessageHandler;
 
+import java.io.IOException;
+
 /**
  * Communication handler. What the client does when it receives a type of a message
  */
@@ -51,7 +53,7 @@ public class ClientMessage implements JiraMessageHandler {
     }
 
     @Override
-    public RawError login(RawLogin rawLogin) {
+    public RawError login(RawLogin rawLogin){
         switch(rawLogin.username){
             case "exists":
                 auth.loginRequest();

@@ -149,8 +149,8 @@ public class Sync {
     }
 
     /**
-     * Login request. Should be responded to with RESPONSE
-     * SETPROJECT -> RESPONSE
+     * Login request. Should be responded to with LOGIN
+     * SETPROJECT -> LOGIN
      * @param username
      * @param password
      * @throws IOException
